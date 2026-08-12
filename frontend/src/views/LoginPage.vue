@@ -1,3 +1,4 @@
+<!--template part-->
 <template>
   <div class="page-container">
     <div class="login-card">
@@ -8,18 +9,12 @@
           viewBox="0 0 500 500" 
           class="logo-svg"
         >
-          <!-- Background Card -->
-          <rect width="500" height="500" rx="32" fill="#FFFDF6"/>
-
-          <!-- Icon: Salad Bowl & Leaf Motif -->
+        <!--logo style-->
           <g transform="translate(250, 195)">
-            <!-- Top Leaf / Steam Shape -->
             <path d="M -30 -32 C -38 -48, -15 -62, 0 -48 C 15 -62, 38 -48, 30 -32 C 38 -18, -38 -18, -30 -32 Z" fill="#FFB054" />
-            <!-- Main Bowl Shape -->
             <path d="M -58 -10 C -58 42, 58 42, 58 -10 Z" fill="#FF7A00" />
           </g>
 
-          <!-- Brand Typography -->
           <text x="250" y="320" class="brand-title">YAMIYUMI</text>
           <text x="250" y="352" class="tagline">FRESH &amp; DELICIOUS</text>
         </svg>
@@ -27,15 +22,25 @@
         <p class="subtitle">Login into your account</p>
       </div>
 
-
+      <!--Input group-->
       <div class="input-group">
         <label>Email address</label>
-        <div class="input-wrapper">
+        <div class="input-email">
           <input 
             type="email" 
             v-model="userEmail" 
-            placeholder="alex@email.com" 
+            placeholder="Kim@email.com" 
           />
+      </div>
+
+        <label>Passwords</label>
+        <div class="input-password">
+          <input 
+            type="password" 
+            v-model="userPw"
+            placeholder="Enter your password"
+          />
+    
           <div class="icon-box">
 
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -45,27 +50,9 @@
           </div>
         </div>
       </div>
-
-      <div class="input-group">
-        <label>Password</label>
-        <div class="input-wrapper">
-          <input 
-            type="password" 
-            v-model="userPw" 
-            placeholder="Enter your password" 
-          />
-          <div class="icon-box">
-
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </div>
-        </div>
-        <a href="#" class="forgot-link">Forgot password?</a>
-      </div>
-
-
+      <a href="#" class="forgot-link">Forgot password?</a>
+      
+      <!--button-->
       <button class="btn-login" @click="handleLogin">Login now</button>
       <div class="divider">
         <span>OR</span>
@@ -77,8 +64,13 @@
   </div>
 </template>
 
+
+<!--script part-->
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const userEmail = ref('')
 const userPw = ref('')
@@ -88,20 +80,23 @@ const handleLogin = () => {
 }
 
 const handleSignup = () => {
-  alert('회원가입 페이지로 이동!')
+  console.log('signup button clicked')
+  router.push('/signup')
 }
 </script>
 
+
+<!--style-->
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap');
 
 .brand-title {
   font-family: 'Montserrat', -apple-system, sans-serif;
-  font-weight: 800;
+  font-weight: 1000;
   fill: #3A251E;
   text-anchor: middle;
   letter-spacing: 4px;
-  font-size: 30px;
+  font-size: 70px;
 }
 
 .tagline {
@@ -110,10 +105,9 @@ const handleSignup = () => {
   fill: #A08C82;
   text-anchor: middle;
   letter-spacing: 5px;
-  font-size: 13px;
+  font-size: 20px;
 }
 
-/* 전체 배경 및 중앙 정렬 */
 .page-container {
   display: flex;
   justify-content: center;
@@ -133,11 +127,11 @@ const handleSignup = () => {
 
 .header-box {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .logo-svg {
-  width: 140px;
+  width: 170px;
   height: auto;
 }
 
@@ -145,7 +139,7 @@ const handleSignup = () => {
   font-size: 14px;
   font-weight: 700;
   color: #4b5563;
-  margin-top: 8px;
+  margin-top: 15px;
   margin-bottom: 0;
 }
 
@@ -162,7 +156,7 @@ const handleSignup = () => {
   margin-bottom: 6px;
 }
 
-.input-wrapper {
+.input-email {
   display: flex;
   align-items: center;
   background-color: #f3f4f6;
@@ -170,7 +164,25 @@ const handleSignup = () => {
   overflow: hidden;
 }
 
-.input-wrapper input {
+.input-email input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  color: #1f2937;
+}
+
+.input-password {
+  display: flex;
+  align-items: center;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.input-password input {
   flex: 1;
   border: none;
   background: transparent;
@@ -198,7 +210,8 @@ const handleSignup = () => {
   font-size: 12px;
   color: #2563eb;
   text-decoration: underline;
-  margin-top: 6px;
+  margin-top: 10px;
+  margin-bottom: 5px;
 }
 
 .btn-login {
