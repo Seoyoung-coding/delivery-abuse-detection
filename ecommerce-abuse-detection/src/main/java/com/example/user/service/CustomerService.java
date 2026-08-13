@@ -3,6 +3,7 @@ import com.example.user.domain.Customer;
 import com.example.user.dto.CustomerDto;
 import com.example.user.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
