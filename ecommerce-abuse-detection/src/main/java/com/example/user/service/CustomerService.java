@@ -15,30 +15,38 @@ public class CustomerService {
 
     public void signup(CustomerDto.SignupRequest request) {
 
-        // 1. 프론트에서 받은 email 꺼내기
         String email = request.getEmail();
         String password = request.getPassword();
 
-
-        // 2. 이미 가입된 이메일인지 검사
         if (customerRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
-
-        // 3. 비밀번호 암호화
         String encodedPassword =
                 passwordEncoder.encode(password);
 
-
-        // 4. Customer 객체 만들기
         Customer customer = new Customer(
                 email,
                 encodedPassword
         );
 
-
-        // 5. DB에 저장
         customerRepository.save(customer);
     }
+
+    public void login(CustomerDto.LoginRequest request) {
+        Customer customer = customerRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("존재하지 않는 이메일입니다.")
+                );
+        boolean passwordMatch = passwordEncoder.matches(
+                request.getPassword(),
+                customer.getPassword()
+        );
+
+        if (!passwordMatch) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다");
+        }
+    }
+
 }
