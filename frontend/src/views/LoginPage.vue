@@ -119,8 +119,8 @@ const handleLogin = async () => {
 
     alert(result)
 
-    // 로그인 성공하면 Main 페이지로 이동
-    router.push('/main')
+    // 로그인 성공하면 홈페이지로 이동
+    router.push('/home')
 
   } else {
 

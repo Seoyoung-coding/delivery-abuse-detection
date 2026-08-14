@@ -183,8 +183,11 @@ const userPw = ref('')
 const confirmPw = ref('')
 
 
-// 4. Register now 버튼을 눌렀을 때 실행되는 함수
+// 4. REGISTER 버튼을 눌렀을 때 실행
 const handleSignup = async () => {
+
+  console.log('1. REGISTER 버튼 클릭')
+
 
   // 5. 빈칸이 있는지 확인
   if (
@@ -205,51 +208,61 @@ const handleSignup = async () => {
   }
 
 
-  // 7. Spring Boot 백엔드에 회원가입 요청 보내기
-  const response = await fetch(
-    'http://localhost:8080/api/customers/signup',
-    {
-      method: 'POST',
+  try {
 
-      headers: {
-        'Content-Type': 'application/json'
-      },
+    console.log('2. Spring Boot로 회원가입 요청 전송')
 
-      // 사용자가 입력한 이메일과 비밀번호를 JSON으로 변환
-      body: JSON.stringify({
-        email: userEmail.value,
-        password: userPw.value
-      })
+
+    // 7. Spring Boot 백엔드에 회원가입 요청 보내기
+    const response = await fetch(
+      'http://localhost:8080/api/customers/signup',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'application/json'
+        },
+
+        // 8. email과 password를 JSON으로 만들어 전송
+        body: JSON.stringify({
+          email: userEmail.value,
+          password: userPw.value
+        })
+      }
+    )
+
+
+    // 9. 백엔드에서 보내온 내용 읽기
+    const result = await response.text()
+
+    console.log('응답 코드:', response.status)
+    console.log('응답 내용:', result)
+
+
+    // 10. 회원가입 성공
+    if (response.ok) {
+
+      alert('회원가입 완료')
+
+      // 11. 로그인 페이지로 이동
+      router.push('/login')
+
+    } else {
+
+      // 12. 백엔드에서 회원가입을 거절한 경우
+      alert('회원가입 실패: ' + result)
+
     }
-  )
 
+  } catch (error) {
 
-  // 8. 회원가입이 성공했는지 확인
-  if (response.ok) {
+    // 13. Spring Boot와 통신 자체를 못한 경우
+    console.error('회원가입 요청 실패:', error)
 
-    // 9. 성공 알림
-    alert('회원가입 완료')
-
-
-    // 10. 로그인 페이지로 이동
-    router.push('/login')
-
-  } else {
-
-    // 11. 회원가입 실패
-    alert('회원가입 실패')
-
+    alert('서버 연결 실패')
   }
 }
-
-
-// 12. 이미 회원인 경우 Login 버튼을 눌러 로그인 페이지로 이동
-const goToLogin = () => {
-  router.push('/login')
-}
-
-</script>
-
+</Script>
 
 <style scoped>
 
