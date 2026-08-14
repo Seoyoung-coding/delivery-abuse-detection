@@ -125,7 +125,7 @@
         class="btn-register"
         @click="handleSignup"
       >
-        REGISTER NOW
+        REGISTER
       </button>
 
 
@@ -167,20 +167,26 @@
 
 <script setup>
 
+// 1. 필요한 기능 import
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+
+// 2. Router 사용 준비
 const router = useRouter()
 
+
+// 3. 사용자가 입력한 값을 저장할 변수
 const username = ref('')
 const userEmail = ref('')
 const userPw = ref('')
 const confirmPw = ref('')
 
 
-const handleSignup = () => {
+// 4. Register now 버튼을 눌렀을 때 실행되는 함수
+const handleSignup = async () => {
 
-  // 빈칸 확인
+  // 5. 빈칸이 있는지 확인
   if (
     !username.value ||
     !userEmail.value ||
@@ -192,20 +198,52 @@ const handleSignup = () => {
   }
 
 
-  // 비밀번호 일치 확인
+  // 6. 비밀번호와 비밀번호 확인이 같은지 검사
   if (userPw.value !== confirmPw.value) {
     alert('Passwords do not match.')
     return
   }
 
 
-  alert(
-    `Username: ${username.value}\nEmail: ${userEmail.value}\nSignup attempt!`
+  // 7. Spring Boot 백엔드에 회원가입 요청 보내기
+  const response = await fetch(
+    'http://localhost:8080/api/customers/signup',
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      // 사용자가 입력한 이메일과 비밀번호를 JSON으로 변환
+      body: JSON.stringify({
+        email: userEmail.value,
+        password: userPw.value
+      })
+    }
   )
 
+
+  // 8. 회원가입이 성공했는지 확인
+  if (response.ok) {
+
+    // 9. 성공 알림
+    alert('회원가입 완료')
+
+
+    // 10. 로그인 페이지로 이동
+    router.push('/login')
+
+  } else {
+
+    // 11. 회원가입 실패
+    alert('회원가입 실패')
+
+  }
 }
 
 
+// 12. 이미 회원인 경우 Login 버튼을 눌러 로그인 페이지로 이동
 const goToLogin = () => {
   router.push('/login')
 }

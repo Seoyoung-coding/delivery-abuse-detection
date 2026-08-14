@@ -65,24 +65,76 @@
 </template>
 
 
-<!--script part-->
 <script setup>
+
+// 1. 필요한 기능 import
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+
+// 2. Router 사용 준비
 const router = useRouter()
 
+
+// 3. 사용자가 입력할 값 저장
 const userEmail = ref('')
 const userPw = ref('')
 
-const handleLogin = () => {
-  alert(`이메일: ${userEmail.value} / 로그인 시도!`)
+
+// 4. 로그인 버튼을 눌렀을 때 실행
+const handleLogin = async () => {
+
+  // 5. 빈칸이 있는지 확인
+  if (!userEmail.value || !userPw.value) {
+    alert('Please enter your email and password.')
+    return
+  }
+
+
+  // 6. Spring Boot 백엔드로 로그인 요청 보내기
+  const response = await fetch(
+    'http://localhost:8080/api/customers/login',
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      // 사용자가 입력한 email/password를 JSON으로 만들어 전송
+      body: JSON.stringify({
+        email: userEmail.value,
+        password: userPw.value
+      })
+    }
+  )
+
+
+  // 7. 백엔드가 보내준 응답 받기
+  const result = await response.text()
+
+
+  // 8. 로그인 성공 여부 확인
+  if (response.ok) {
+
+    alert(result)
+
+    // 로그인 성공하면 Main 페이지로 이동
+    router.push('/main')
+
+  } else {
+
+    alert('Email or password is incorrect.')
+
+  }
 }
 
+
+// 9. 회원가입 버튼을 누르면 Signup 페이지로 이동
 const handleSignup = () => {
-  console.log('signup button clicked')
   router.push('/signup')
 }
+
 </script>
 
 
