@@ -1,7 +1,10 @@
-package com.example.user.service;
-import com.example.user.domain.Customer;
-import com.example.user.dto.CustomerDto;
-import com.example.user.repository.CustomerRepository;
+package com.example.customer.service;
+import com.example.customer.domain.Customer;
+import com.example.customer.dto.request.LoginRequest;
+import com.example.customer.dto.request.SignupRequest;
+import com.example.customer.dto.response.AuthResponse;
+import com.example.customer.repository.CustomerRepository;
+import com.example.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,8 +15,9 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public void signup(CustomerDto.SignupRequest request) {
+    public void signup(SignupRequest request) {
 
         String email = request.getEmail();
         String password = request.getPassword();
@@ -33,12 +37,13 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    public void login(CustomerDto.LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         Customer customer = customerRepository
                 .findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new RuntimeException("존재하지 않는 이메일입니다.")
                 );
+
         boolean passwordMatch = passwordEncoder.matches(
                 request.getPassword(),
                 customer.getPassword()
@@ -47,6 +52,9 @@ public class CustomerService {
         if (!passwordMatch) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다");
         }
-    }
 
+        String token = jwtTokenProvider.createToken(customer.getEmail());
+
+        return new AuthResponse("Login Success", token);
+    }
 }
