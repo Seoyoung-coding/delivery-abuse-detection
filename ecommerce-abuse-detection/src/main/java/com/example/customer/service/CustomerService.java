@@ -1,6 +1,7 @@
 package com.example.customer.service;
 import com.example.customer.domain.Customer;
 import com.example.customer.dto.request.LoginRequest;
+import com.example.customer.dto.request.PasswordChangeRequest;
 import com.example.customer.dto.request.SignupRequest;
 import com.example.customer.dto.response.AuthResponse;
 import com.example.customer.repository.CustomerRepository;
@@ -87,5 +88,28 @@ public class CustomerService {
 
         // 5. 로그인한 사용자의 이메일 반환
         return customer.getEmail();
+    }
+
+    // 현재 로그인한 사용자의 비밀번호 변경
+    public void changePassword(
+            String authorizationHeader,
+            PasswordChangeRequest request
+    ) {
+        if (!authorizationHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("잘못된 토큰 형식입니다.");
+        }
+        String token = authorizationHeader.substring(7);
+        String email = jwtTokenProvider.getEmailFromToken(token);
+        Customer customer = customerRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("존재하지 않는 사용자입니다.")
+                );
+
+        String encodedPassword =
+                passwordEncoder.encode(request.getNewPassword());
+
+        customer.changePassword(encodedPassword);
+        customerRepository.save(customer);
     }
 }
