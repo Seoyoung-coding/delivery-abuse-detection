@@ -65,4 +65,13 @@ public class CustomerController {
         // 4. 변경 성공 응답
         return ResponseEntity.ok("비밀번호 변경 성공");
     }
+
+    // 현재 로그인한 사용자 회원 탈퇴
+    @DeleteMapping("/me")
+    public ResponseEntity<String> deleteMyAccount(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        customerService.deleteMyAccount(authorizationHeader);
+        return ResponseEntity.ok("회원 탈퇴 성공");
+    }
 }

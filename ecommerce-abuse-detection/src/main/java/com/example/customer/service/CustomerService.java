@@ -112,4 +112,21 @@ public class CustomerService {
         customer.changePassword(encodedPassword);
         customerRepository.save(customer);
     }
+
+    // 현재 로그인한 사용자 회원 탈퇴
+    public void deleteMyAccount(String authorizationHeader) {
+
+        if (!authorizationHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("잘못된 토큰 형식입니다.");
+        }
+        String token = authorizationHeader.substring(7);
+        String email = jwtTokenProvider.getEmailFromToken(token);
+        Customer customer = customerRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("존재하지 않는 사용자입니다.")
+                );
+        // 5. 해당 사용자 삭제
+        customerRepository.delete(customer);
+    }
 }
