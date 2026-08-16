@@ -64,7 +64,6 @@
   </div>
 </template>
 
-
 <script setup>
 
 // 1. 필요한 기능 import
@@ -89,7 +88,6 @@ const handleLogin = async () => {
     alert('Please enter your email and password.')
     return
   }
-
 
   // 6. Spring Boot 백엔드로 로그인 요청 보내기
   const response = await fetch(
@@ -117,9 +115,12 @@ const handleLogin = async () => {
   // 8. 로그인 성공 여부 확인
   if (response.ok) {
 
+    // 9. 백엔드가 보내준 JWT를 브라우저에 저장
+    localStorage.setItem('token', result.token)
+
     alert(result)
 
-    // 로그인 성공하면 홈페이지로 이동
+    // 10. 로그인 성공하면 홈페이지로 이동
     router.push('/home')
 
   } else {
@@ -130,7 +131,7 @@ const handleLogin = async () => {
 }
 
 
-// 9. 회원가입 버튼을 누르면 Signup 페이지로 이동
+// 11. 회원가입 버튼을 누르면 Signup 페이지로 이동
 const handleSignup = () => {
   router.push('/signup')
 }
