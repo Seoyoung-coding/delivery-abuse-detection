@@ -30,4 +30,17 @@ public class CustomerController {
         AuthResponse response = customerService.login(request);
         return ResponseEntity.ok(response);
     }
+
+    // 1. 현재 로그인한 사용자 정보 요청
+    @GetMapping("/me")
+    public ResponseEntity<String> me(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+
+        // 2. Authorization 헤더를 Service에 넘김
+        String email = customerService.getMyEmail(authorizationHeader);
+
+        // 3. 현재 로그인한 사용자의 이메일 반환
+        return ResponseEntity.ok(email);
+    }
 }
