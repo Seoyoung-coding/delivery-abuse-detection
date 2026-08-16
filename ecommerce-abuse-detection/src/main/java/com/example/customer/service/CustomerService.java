@@ -126,7 +126,5 @@ public class CustomerService {
                 .orElseThrow(() ->
                         new RuntimeException("존재하지 않는 사용자입니다.")
                 );
-        // 5. 해당 사용자 삭제
-        customerRepository.delete(customer);
     }
 }

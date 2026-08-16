@@ -2,6 +2,8 @@ package com.example.customer.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity // db의 customers 테이블과 연결
 @Table(name = "customers")
 @Getter
@@ -27,5 +29,18 @@ public class Customer {
 
     public void changePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+
+    // Soft Delete
+    public void softDelete() {
+
+        // 탈퇴 상태로 변경
+        this.deleted = true;
+
+        // 탈퇴 시간 기록
+        this.deletedAt = LocalDateTime.now();
     }
 }

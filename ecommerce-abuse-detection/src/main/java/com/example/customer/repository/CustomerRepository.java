@@ -8,4 +8,8 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer,Long> {
     Optional<Customer> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    // 탈퇴하지 않은 회원만 검색
+    // deleted = false인 회원만 가져옴
+    Optional<Customer> findByEmailAndDeletedFalse(String email);
 }

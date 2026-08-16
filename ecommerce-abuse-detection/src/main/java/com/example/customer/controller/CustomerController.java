@@ -69,9 +69,16 @@ public class CustomerController {
     // 현재 로그인한 사용자 회원 탈퇴
     @DeleteMapping("/me")
     public ResponseEntity<String> deleteMyAccount(
-            @RequestHeader("Authorization") String authorizationHeader
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
     ) {
-        customerService.deleteMyAccount(authorizationHeader);
-        return ResponseEntity.ok("회원 탈퇴 성공");
+        // Service에서 Soft Delete 실행
+        customerService.deleteMyAccount(
+                authorizationHeader
+        );
+        return ResponseEntity.ok(
+                "회원 탈퇴 성공"
+        );
     }
 }
