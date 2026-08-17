@@ -1,14 +1,24 @@
 package com.example.customer.service;
+
 import com.example.customer.domain.Customer;
 import com.example.customer.dto.request.LoginRequest;
 import com.example.customer.dto.request.PasswordChangeRequest;
 import com.example.customer.dto.request.SignupRequest;
 import com.example.customer.dto.response.AuthResponse;
 import com.example.customer.repository.CustomerRepository;
+
+import com.example.global.exception.CustomerNotFoundException;
+import com.example.global.exception.DuplicateEmailException;
+import com.example.global.exception.InvalidPasswordException;
+import com.example.global.exception.InvalidTokenException;
+import com.example.global.exception.LoginFailedException;
+
 import com.example.global.jwt.JwtTokenProvider;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
@@ -19,138 +29,206 @@ public class CustomerService {
     private final JwtTokenProvider jwtTokenProvider;
 
 
-    // 회원 가입
+    // =========================
+    // 회원가입
+    // =========================
     public void signup(SignupRequest request) {
 
-        // 요청에서 이메일/pw 꺼내기
         String email = request.getEmail();
         String password = request.getPassword();
 
-        // 중복 확인
+
+        // 이메일 중복 예외
         if (customerRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new DuplicateEmailException(
+                    "이미 사용 중인 이메일입니다."
+            );
         }
-        // 비번 암호화
+
+
         String encodedPassword =
                 passwordEncoder.encode(password);
+
 
         Customer customer = new Customer(
                 email,
                 encodedPassword
         );
 
+
         customerRepository.save(customer);
     }
 
+
+    // =========================
     // 로그인
+    // =========================
     public AuthResponse login(LoginRequest request) {
 
-        // 1. 이메일로 회원 찾기
+        // 1. 탈퇴하지 않은 회원 중 이메일 검색
         Customer customer = customerRepository
-                .findByEmail(request.getEmail())
+                .findByEmailAndDeletedFalse(request.getEmail())
                 .orElseThrow(() ->
-                        new RuntimeException("존재하지 않는 이메일입니다.")
+                        new LoginFailedException(
+                                "이메일 또는 비밀번호가 올바르지 않습니다."
+                        )
                 );
 
-        // 2. 입력한 비번과 DB 비밀번호 비교
-        boolean passwordMatch = passwordEncoder.matches(
-                request.getPassword(),
-                customer.getPassword()
-        );
 
-        // 틀리면 로그인 불가
+        // 2. 비밀번호 비교
+        boolean passwordMatch =
+                passwordEncoder.matches(
+                        request.getPassword(),
+                        customer.getPassword()
+                );
+
+
+        // 3. 비밀번호가 틀리면 로그인 실패
         if (!passwordMatch) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다");
+
+            throw new LoginFailedException(
+                    "이메일 또는 비밀번호가 올바르지 않습니다."
+            );
         }
 
-        // 성공하면 JWT 생성
-        String token = jwtTokenProvider.createToken(customer.getEmail());
 
-        // JWT를 AuthResponse에 담아서 controller로 반환
-        return new AuthResponse("Login Success", token);
+        // 4. 로그인 성공 → JWT 생성
+        String token =
+                jwtTokenProvider.createToken(
+                        customer.getEmail()
+                );
+
+
+        // 5. 응답 반환
+        return new AuthResponse(
+                "Login Success",
+                token
+        );
     }
 
-    // 현재 로그인한 사용자 찾기
+
+    // =========================
+    // 현재 로그인한 사용자 이메일 조회
+    // =========================
     public String getMyEmail(
             String authorizationHeader
     ) {
 
-        // 1. 공통 메서드로 현재 Customer 찾기
         Customer customer =
                 getCurrentCustomer(authorizationHeader);
 
-
-        // 2. email 반환
         return customer.getEmail();
     }
 
+
+    // =========================
+    // 비밀번호 변경
+    // =========================
     public void changePassword(
             String authorizationHeader,
             PasswordChangeRequest request
     ) {
 
-        // 1. 공통 메서드로 현재 Customer 찾기
+        // 1. 현재 사용자 확인
         Customer customer =
                 getCurrentCustomer(authorizationHeader);
 
-        // 2. 새 비밀번호 암호화
+
+        // 2. 새 비밀번호가 없는 경우
+        if (
+                request.getNewPassword() == null ||
+                        request.getNewPassword().isBlank()
+        ) {
+
+            throw new InvalidPasswordException(
+                    "새 비밀번호를 입력해주세요."
+            );
+        }
+
+
+        // 3. 새 비밀번호 암호화
         String encodedPassword =
                 passwordEncoder.encode(
                         request.getNewPassword()
                 );
 
-        // 3. 비밀번호 변경
+
+        // 4. 변경
         customer.changePassword(encodedPassword);
 
-        // 4. DB 저장
+
+        // 5. 저장
         customerRepository.save(customer);
     }
 
+
+    // =========================
+    // 회원 탈퇴
+    // =========================
     public void deleteMyAccount(
             String authorizationHeader
     ) {
 
-        // 1. 공통 메서드로 현재 Customer 찾기
         Customer customer =
                 getCurrentCustomer(authorizationHeader);
 
-        // 2. 실제 삭제가 아니라 deleted = true
+
         customer.softDelete();
 
-        // 3. 변경사항 DB 저장
+
         customerRepository.save(customer);
     }
 
-    // 공통 로직 = 현재 로그인 한 Customer 찾기
+
+    // =========================
+    // 공통 로직
+    // 현재 로그인한 Customer 찾기
+    // =========================
     private Customer getCurrentCustomer(
             String authorizationHeader
     ) {
 
-        // 1. Authorization Header 확인
+        // 1. Authorization Header 형식 문제
         if (
                 authorizationHeader == null ||
                         !authorizationHeader.startsWith("Bearer ")
         ) {
-            throw new RuntimeException(
+
+            throw new InvalidTokenException(
                     "잘못된 토큰 형식입니다."
             );
         }
 
-        // 2. "Bearer " 제거
+
+        // 2. Bearer 제거
         String token =
                 authorizationHeader.substring(7);
 
-        // 3. JWT에서 email 추출
-        String email =
-                jwtTokenProvider.getEmailFromToken(token);
 
-        // 4. 탈퇴하지 않은 Customer 찾기
+        // 3. JWT에서 email 추출
+        String email;
+
+        try {
+
+            email =
+                    jwtTokenProvider.getEmailFromToken(token);
+
+        } catch (Exception e) {
+
+            // 만료 / 위조 / 잘못된 JWT
+            throw new InvalidTokenException(
+                    "유효하지 않거나 만료된 토큰입니다."
+            );
+        }
+
+
+        // 4. Customer가 존재하지 않는 경우
         return customerRepository
                 .findByEmailAndDeletedFalse(email)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new CustomerNotFoundException(
                                 "존재하지 않는 사용자입니다."
                         )
                 );
-        }
+    }
 }
