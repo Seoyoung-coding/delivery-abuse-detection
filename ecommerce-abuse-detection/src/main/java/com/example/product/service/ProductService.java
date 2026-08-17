@@ -12,25 +12,23 @@ import com.example.store.domain.Store;
 import com.example.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
-    // Customer 조회
     private final CustomerRepository customerRepository;
-
-    // Seller 조회
     private final SellerRepository sellerRepository;
-
-    // Store 조회
     private final StoreRepository storeRepository;
-
-    // Product 저장
     private final ProductRepository productRepository;
-
-    // JWT에서 email 추출
     private final JwtTokenProvider jwtTokenProvider;
 
 
@@ -42,7 +40,7 @@ public class ProductService {
             ProductCreateRequest request
     ) {
 
-        // 1. Authorization Header가 Bearer 형식인지 확인
+        // 1. Bearer 형식 확인
         if (
                 authorizationHeader == null ||
                         !authorizationHeader.startsWith("Bearer ")
@@ -53,17 +51,17 @@ public class ProductService {
         }
 
 
-        // 2. "Bearer " 7글자를 제거하고 실제 JWT만 꺼냄
+        // 2. Bearer 제거하고 JWT 추출
         String token =
                 authorizationHeader.substring(7);
 
 
-        // 3. JWT에서 현재 로그인한 사용자의 email 추출
+        // 3. JWT에서 email 추출
         String email =
                 jwtTokenProvider.getEmailFromToken(token);
 
 
-        // 4. email로 현재 로그인한 Customer 찾기
+        // 4. 현재 로그인한 Customer 찾기
         Customer customer = customerRepository
                 .findByEmailAndDeletedFalse(email)
                 .orElseThrow(() ->
@@ -73,7 +71,7 @@ public class ProductService {
                 );
 
 
-        // 5. 이 Customer가 Seller인지 확인하고 Seller 가져오기
+        // 5. Seller인지 확인
         Seller seller = sellerRepository
                 .findByCustomer(customer)
                 .orElseThrow(() ->
@@ -83,7 +81,7 @@ public class ProductService {
                 );
 
 
-        // 6. 이 Seller가 소유한 Store 찾기
+        // 6. Seller의 Store 찾기
         Store store = storeRepository
                 .findBySeller(seller)
                 .orElseThrow(() ->
@@ -93,17 +91,73 @@ public class ProductService {
                 );
 
 
-        // 7. Store + Seller가 입력한 상품 정보로 Product 생성
+        // 7. Seller가 올린 사진 저장
+        String imageUrl =
+                saveImage(request.getImage());
+
+
+        // 8. Product 생성
         Product product = new Product(
                 store,
                 request.getName(),
                 request.getDescription(),
                 request.getPrice(),
-                request.getImageUrl()
+                imageUrl
         );
 
 
-        // 8. Product를 DB에 저장
+        // 9. Product DB 저장
         productRepository.save(product);
+    }
+
+
+    // =========================
+    // 상품 이미지 저장
+    // =========================
+    private String saveImage(MultipartFile image) {
+
+        // 1. 사진이 없는 경우
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
+
+
+        try {
+
+            // 2. 사진을 저장할 폴더
+            Path uploadDirectory =
+                    Paths.get("uploads/products");
+
+
+            // 3. 폴더가 없으면 자동 생성
+            Files.createDirectories(uploadDirectory);
+
+
+            // 4. 파일 이름이 겹치지 않도록 UUID 생성
+            String fileName =
+                    UUID.randomUUID()
+                            + "_"
+                            + image.getOriginalFilename();
+
+
+            // 5. 최종 저장 위치
+            Path filePath =
+                    uploadDirectory.resolve(fileName);
+
+
+            // 6. 실제 파일 저장
+            image.transferTo(filePath);
+
+
+            // 7. DB에 저장할 이미지 URL 반환
+            return "/uploads/products/" + fileName;
+
+
+        } catch (IOException e) {
+
+            throw new RuntimeException(
+                    "이미지 저장에 실패했습니다."
+            );
+        }
     }
 }

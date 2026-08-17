@@ -2,6 +2,7 @@ package com.example.product.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -22,7 +23,6 @@ public class ProductCreateRequest {
     private BigDecimal price;
 
 
-    // 4. 상품 이미지 URL
-    // 지금은 실제 이미지 업로드 대신 URL을 받음
-    private String imageUrl;
+    // 4. Seller가 업로드한 실제 사진 파일
+    private MultipartFile image;
 }
