@@ -15,10 +15,6 @@ public class StoreController {
     // 1. Store 관련 실제 로직을 처리하는 Service
     private final StoreService storeService;
 
-
-    // =========================
-    // 가게 등록
-    // =========================
     @PostMapping
     public ResponseEntity<String> createStore(
 
