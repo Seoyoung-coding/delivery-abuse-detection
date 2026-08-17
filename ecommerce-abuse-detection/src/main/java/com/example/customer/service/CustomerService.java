@@ -18,15 +18,19 @@ public class CustomerService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+
+    // 회원 가입
     public void signup(SignupRequest request) {
 
+        // 요청에서 이메일/pw 꺼내기
         String email = request.getEmail();
         String password = request.getPassword();
 
+        // 중복 확인
         if (customerRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
-
+        // 비번 암호화
         String encodedPassword =
                 passwordEncoder.encode(password);
 
@@ -38,6 +42,7 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
+    // 로그인
     public AuthResponse login(LoginRequest request) {
 
         // 1. 이메일로 회원 찾기
@@ -66,65 +71,86 @@ public class CustomerService {
     }
 
     // 현재 로그인한 사용자 찾기
-    public String getMyEmail(String authorizationHeader) {
+    public String getMyEmail(
+            String authorizationHeader
+    ) {
 
-        // 1. Authorization 헤더가 Bearer로 시작하는지 확인
-        if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("잘못된 토큰 형식입니다.");
-        }
+        // 1. 공통 메서드로 현재 Customer 찾기
+        Customer customer =
+                getCurrentCustomer(authorizationHeader);
 
-        // 2. "Bearer " 부분을 제거하고 JWT만 꺼내기
-        String token = authorizationHeader.substring(7);
 
-        // 3. JWT 안에서 로그인한 사용자의 email 꺼내기
-        String email = jwtTokenProvider.getEmailFromToken(token);
-
-        // 4. 해당 email을 가진 회원이 실제 DB에 존재하는지 확인
-        Customer customer = customerRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("존재하지 않는 사용자입니다.")
-                );
-
-        // 5. 로그인한 사용자의 이메일 반환
+        // 2. email 반환
         return customer.getEmail();
     }
 
-    // 현재 로그인한 사용자의 비밀번호 변경
     public void changePassword(
             String authorizationHeader,
             PasswordChangeRequest request
     ) {
-        if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("잘못된 토큰 형식입니다.");
-        }
-        String token = authorizationHeader.substring(7);
-        String email = jwtTokenProvider.getEmailFromToken(token);
-        Customer customer = customerRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("존재하지 않는 사용자입니다.")
+
+        // 1. 공통 메서드로 현재 Customer 찾기
+        Customer customer =
+                getCurrentCustomer(authorizationHeader);
+
+        // 2. 새 비밀번호 암호화
+        String encodedPassword =
+                passwordEncoder.encode(
+                        request.getNewPassword()
                 );
 
-        String encodedPassword =
-                passwordEncoder.encode(request.getNewPassword());
-
+        // 3. 비밀번호 변경
         customer.changePassword(encodedPassword);
+
+        // 4. DB 저장
         customerRepository.save(customer);
     }
 
-    // 현재 로그인한 사용자 회원 탈퇴
-    public void deleteMyAccount(String authorizationHeader) {
+    public void deleteMyAccount(
+            String authorizationHeader
+    ) {
 
-        if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("잘못된 토큰 형식입니다.");
-        }
-        String token = authorizationHeader.substring(7);
-        String email = jwtTokenProvider.getEmailFromToken(token);
-        Customer customer = customerRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("존재하지 않는 사용자입니다.")
-                );
+        // 1. 공통 메서드로 현재 Customer 찾기
+        Customer customer =
+                getCurrentCustomer(authorizationHeader);
+
+        // 2. 실제 삭제가 아니라 deleted = true
+        customer.softDelete();
+
+        // 3. 변경사항 DB 저장
+        customerRepository.save(customer);
     }
+
+    // 공통 로직 = 현재 로그인 한 Customer 찾기
+    private Customer getCurrentCustomer(
+            String authorizationHeader
+    ) {
+
+        // 1. Authorization Header 확인
+        if (
+                authorizationHeader == null ||
+                        !authorizationHeader.startsWith("Bearer ")
+        ) {
+            throw new RuntimeException(
+                    "잘못된 토큰 형식입니다."
+            );
+        }
+
+        // 2. "Bearer " 제거
+        String token =
+                authorizationHeader.substring(7);
+
+        // 3. JWT에서 email 추출
+        String email =
+                jwtTokenProvider.getEmailFromToken(token);
+
+        // 4. 탈퇴하지 않은 Customer 찾기
+        return customerRepository
+                .findByEmailAndDeletedFalse(email)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "존재하지 않는 사용자입니다."
+                        )
+                );
+        }
 }
