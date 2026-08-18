@@ -184,7 +184,7 @@ public class CustomerService {
     // 공통 로직
     // 현재 로그인한 Customer 찾기
     // =========================
-    private Customer getCurrentCustomer(
+    public Customer getCurrentCustomer(
             String authorizationHeader
     ) {
 
