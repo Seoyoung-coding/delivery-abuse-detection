@@ -3,7 +3,7 @@ package com.example.seller.service;
 import com.example.customer.domain.Customer;
 import com.example.seller.domain.SellerApplication;
 import com.example.seller.enums.SellerApplicationStatus;
-import com.example.seller.repository.SellerApplicationRepository;
+import com.example.admin.repository.SellerApplicationRepository;
 import com.example.seller.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

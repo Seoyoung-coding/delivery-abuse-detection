@@ -1,4 +1,4 @@
-package com.example.seller.repository;
+package com.example.admin.repository;
 
 import com.example.customer.domain.Customer;
 import com.example.seller.domain.SellerApplication;
@@ -29,5 +29,4 @@ public interface SellerApplicationRepository
     findByStatus(
             SellerApplicationStatus status
     );
-
 }
