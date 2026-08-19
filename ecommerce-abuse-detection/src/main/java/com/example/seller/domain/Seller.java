@@ -14,7 +14,7 @@ public class Seller {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne // customer 한명당 seller 하나만 연결 될 수 있음
     @JoinColumn(
             name = "customer_id",
             nullable = false,
