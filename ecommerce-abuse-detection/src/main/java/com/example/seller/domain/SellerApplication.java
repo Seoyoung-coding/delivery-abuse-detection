@@ -56,4 +56,29 @@ public class SellerApplication {
         // 처음 신청하면 무조건 심사 대기
         this.status = SellerApplicationStatus.PENDING;
     }
+
+    // 8. 신청 승인
+    public void approve() {
+
+        if (this.status != SellerApplicationStatus.PENDING) {
+            throw new IllegalStateException(
+                    "이미 처리된 Seller 신청입니다."
+            );
+        }
+
+        this.status = SellerApplicationStatus.APPROVED;
+    }
+
+
+    // 9. 신청 거절
+    public void reject() {
+
+        if (this.status != SellerApplicationStatus.PENDING) {
+            throw new IllegalStateException(
+                    "이미 처리된 Seller 신청입니다."
+            );
+        }
+
+        this.status = SellerApplicationStatus.REJECTED;
+    }
 }
