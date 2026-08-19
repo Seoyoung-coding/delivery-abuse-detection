@@ -1,5 +1,6 @@
 package com.example.admin.service;
 
+import com.example.admin.dto.request.AdminLoginRequest;
 import com.example.admin.dto.response.AdminSellerApplicationResponse;
 import com.example.seller.domain.SellerApplication;
 import com.example.seller.enums.SellerApplicationStatus;
