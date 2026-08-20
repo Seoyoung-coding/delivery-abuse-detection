@@ -11,6 +11,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/seller-applications")
 @RequiredArgsConstructor
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowedHeaders = {
+                "Authorization",
+                "Content-Type"
+        }
+)
 public class AdminSellerApplicationController {
 
     private final AdminSellerApplicationService adminSellerApplicationService;

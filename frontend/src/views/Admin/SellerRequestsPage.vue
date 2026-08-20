@@ -56,7 +56,7 @@
             </h3>
 
             <p>
-              {{ request.email }}
+              {{ request.customerEmail }}
             </p>
 
             <span>
@@ -116,60 +116,349 @@
 
 <script setup>
 
-import { ref } from 'vue'
+import {
+  ref,
+  onMounted
+} from 'vue'
 
 import AdminTopNav from '@/components/admin/AdminTopNav.vue'
 
 
-const requests = ref([
+// =========================
+// 1. 실제 Seller 신청 목록
+// =========================
 
-  {
-    id: 1,
-    storeName: 'Yami Kitchen',
-    email: 'yami@email.com',
-    address: 'Santa Barbara, CA'
-  },
-
-  {
-    id: 2,
-    storeName: 'Tokyo Bowl',
-    email: 'tokyo@email.com',
-    address: 'Goleta, CA'
-  },
-
-  {
-    id: 3,
-    storeName: 'Seoul Food',
-    email: 'seoul@email.com',
-    address: 'Santa Barbara, CA'
-  }
-
-])
+const requests = ref([])
 
 
-const acceptRequest = (id) => {
+// =========================
+// 2. 페이지가 처음 열릴 때
+// =========================
 
-  // 나중에:
-  // PATCH /api/admin/seller-applications/{id}/approve
+onMounted(() => {
 
-  requests.value =
-    requests.value.filter(
-      request => request.id !== id
+  loadRequests()
+
+})
+
+
+// =========================
+// 3. PENDING Seller 신청 조회
+// =========================
+
+const loadRequests = async () => {
+
+  // Admin 로그인할 때 저장한 JWT 가져오기
+  const adminToken =
+    localStorage.getItem('adminToken')
+
+
+  console.log(
+    'adminToken:',
+    adminToken
+  )
+
+
+  // Admin Token이 없으면 요청하지 않음
+  if (!adminToken) {
+
+    console.error(
+      'Admin token does not exist.'
     )
 
+    return
+  }
+
+
+  try {
+
+    // =========================
+    // Backend에 PENDING 신청 조회
+    // =========================
+
+    const response = await fetch(
+      'http://localhost:8080/api/admin/seller-applications/pending',
+      {
+        method: 'GET',
+
+        headers: {
+
+          Authorization:
+            `Bearer ${adminToken}`
+
+        }
+      }
+    )
+
+
+    // =========================
+    // HTTP 상태 확인
+    // =========================
+
+    console.log(
+      'Pending request response status:',
+      response.status
+    )
+
+
+    // =========================
+    // Backend 요청 실패
+    // =========================
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text()
+
+
+      console.error(
+        'Failed to load seller applications:',
+        errorText
+      )
+
+
+      return
+    }
+
+
+    // =========================
+    // Backend JSON → JS 데이터
+    // =========================
+
+    const data =
+      await response.json()
+
+
+    console.log(
+      'Pending seller applications:',
+      data
+    )
+
+
+    // =========================
+    // Vue requests에 저장
+    // =========================
+
+    requests.value = data
+
+
+    console.log(
+      'Vue requests:',
+      requests.value
+    )
+
+
+  } catch (error) {
+
+    console.error(
+      'loadRequests error:',
+      error
+    )
+  }
 }
 
 
-const denyRequest = (id) => {
+// =========================
+// 4. Seller 신청 승인
+// =========================
 
-  // 나중에:
-  // PATCH /api/admin/seller-applications/{id}/reject
+const acceptRequest = async (id) => {
 
-  requests.value =
-    requests.value.filter(
-      request => request.id !== id
+  // Admin JWT 가져오기
+  const adminToken =
+    localStorage.getItem('adminToken')
+
+
+  if (!adminToken) {
+
+    alert(
+      'Admin login is required.'
     )
 
+    return
+  }
+
+
+  try {
+
+    // =========================
+    // Backend 승인 요청
+    // =========================
+
+    const response = await fetch(
+      `http://localhost:8080/api/admin/seller-applications/${id}/approve`,
+      {
+        method: 'PATCH',
+
+        headers: {
+
+          Authorization:
+            `Bearer ${adminToken}`
+
+        }
+      }
+    )
+
+
+    console.log(
+      'Approve response status:',
+      response.status
+    )
+
+
+    // =========================
+    // 승인 실패
+    // =========================
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text()
+
+
+      console.error(
+        'Approve failed:',
+        errorText
+      )
+
+
+      alert(
+        'Failed to approve seller application.'
+      )
+
+
+      return
+    }
+
+
+    // =========================
+    // 승인 성공
+    // =========================
+
+    alert(
+      'Seller application approved!'
+    )
+
+
+    // 승인됐으므로
+    // PENDING 목록을 Backend에서 다시 가져옴
+    await loadRequests()
+
+
+  } catch (error) {
+
+    console.error(
+      'Accept request error:',
+      error
+    )
+
+
+    alert(
+      'Unable to connect to the server.'
+    )
+  }
+}
+
+
+// =========================
+// 5. Seller 신청 거절
+// =========================
+
+const denyRequest = async (id) => {
+
+  // Admin JWT 가져오기
+  const adminToken =
+    localStorage.getItem('adminToken')
+
+
+  if (!adminToken) {
+
+    alert(
+      'Admin login is required.'
+    )
+
+    return
+  }
+
+
+  try {
+
+    // =========================
+    // Backend 거절 요청
+    // =========================
+
+    const response = await fetch(
+      `http://localhost:8080/api/admin/seller-applications/${id}/reject`,
+      {
+        method: 'PATCH',
+
+        headers: {
+
+          Authorization:
+            `Bearer ${adminToken}`
+
+        }
+      }
+    )
+
+
+    console.log(
+      'Reject response status:',
+      response.status
+    )
+
+
+    // =========================
+    // 거절 실패
+    // =========================
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text()
+
+
+      console.error(
+        'Reject failed:',
+        errorText
+      )
+
+
+      alert(
+        'Failed to reject seller application.'
+      )
+
+
+      return
+    }
+
+
+    // =========================
+    // 거절 성공
+    // =========================
+
+    alert(
+      'Seller application rejected!'
+    )
+
+
+    // 거절됐으므로
+    // PENDING 목록 다시 조회
+    await loadRequests()
+
+
+  } catch (error) {
+
+    console.error(
+      'Deny request error:',
+      error
+    )
+
+
+    alert(
+      'Unable to connect to the server.'
+    )
+  }
 }
 
 </script>
