@@ -474,7 +474,7 @@ const loadApplicationStatus = async () => {
   try {
 
     const response = await fetch(
-      'http://localhost:8080/api/seller-applications/status',
+      'http://localhost:8080/api/seller-applications/me/status',
       {
         method: 'GET',
 
@@ -551,8 +551,15 @@ const loadApplicationStatus = async () => {
     // 일 수도 있으므로 둘 다 처리
     // =========================
 
-    const responseText =
-      await response.text()
+  const responseText =
+    await response.text()
+
+
+  console.log(
+  'STATUS RESPONSE:',
+  response.status,
+  responseText
+)
 
 
     if (!responseText) {
@@ -708,17 +715,9 @@ const submitApplication = async () => {
         method: 'POST',
 
         headers: {
-
           'Content-Type': 'application/json',
-
           Authorization: `Bearer ${token}`
-
         },
-
-
-        // =========================
-        // Spring Boot로 전달
-        // =========================
 
         body: JSON.stringify({
 
@@ -732,10 +731,18 @@ const submitApplication = async () => {
             address.value.trim()
 
         })
-
       }
     )
 
+
+    // =========================
+    // HTTP 상태 확인
+    // =========================
+
+    console.log(
+      'SUBMIT STATUS:',
+      response.status
+    )
 
 
     // =========================
@@ -770,9 +777,7 @@ const submitApplication = async () => {
 
 
       return
-
     }
-
 
 
     // =========================
@@ -789,8 +794,10 @@ const submitApplication = async () => {
     )
 
 
-
+    // =========================
     // 인증 실패
+    // =========================
+
     if (
       response.status === 401 ||
       response.status === 403
@@ -800,12 +807,13 @@ const submitApplication = async () => {
         'Your login session is invalid. Please login again.'
 
       return
-
     }
 
 
-
+    // =========================
     // 중복 신청 등
+    // =========================
+
     if (response.status === 400) {
 
       errorMessage.value =
@@ -813,9 +821,12 @@ const submitApplication = async () => {
         'Unable to submit the seller application.'
 
       return
-
     }
 
+
+    // =========================
+    // 기타 오류
+    // =========================
 
     errorMessage.value =
       'Unable to submit the application. Please try again.'
@@ -842,7 +853,6 @@ const submitApplication = async () => {
 }
 
 
-
 // =========================
 // 8. REJECTED 후 다시 신청
 // =========================
@@ -856,7 +866,6 @@ const resetApplication = () => {
 }
 
 
-
 // =========================
 // 9. 뒤로가기
 // =========================
@@ -866,7 +875,6 @@ const goBack = () => {
   router.push('/settings')
 
 }
-
 
 
 // =========================
@@ -880,7 +888,6 @@ const goToProfile = () => {
 }
 
 
-
 // =========================
 // 11. My Store 이동
 // =========================
@@ -892,12 +899,9 @@ const goToStore = () => {
 }
 
 </script>
-
-
 <style scoped>
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap');
-
 
 * {
   box-sizing: border-box;
