@@ -1,26 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import LoginPage from '@/views/LoginPage.vue'
-import SignupPage from '@/views/SignupPage.vue'
-import HomePage from '@/views/HomePage.vue'
-import SearchPage from '@/views/SearchPage.vue'
+// =========================
+// Customer
+// =========================
+
+import LoginPage from '@/views/customer/LoginPage.vue'
+import SignupPage from '@/views/customer/SignupPage.vue'
+import HomePage from '@/views/customer/HomePage.vue'
+import SearchPage from '@/views/customer/SearchPage.vue'
 import CategoriesPage from '@/views/customer/CategoriesPage.vue'
 import CartPage from '@/views/customer/CartPage.vue'
-import OrderPage from '@/views/OrderPage.vue'
-import ProfilePage from '@/views/ProfilePage.vue'
-import AdminHomePage from '@/views/admin/AdminHomePage.vue'
-import SellerRequestsPage from '@/views/admin/SellerRequestsPage.vue'
-import SellersPage from '@/views/admin/SellersPage.vue'
-import ReportsPage from '@/views/admin/ReportsPage.vue'
-import AdminChatPage from '@/views/admin/AdminChatPage.vue'
+import OrderPage from '@/views/customer/OrderPage.vue'
+import ProfilePage from '@/views/customer/ProfilePage.vue'
+
+// =========================
+// Admin
+// =========================
+
+import AdminLoginPage from '@/views/Admin/AdminLoginPage.vue'
+import AdminHomePage from '@/views/Admin/AdminHomePage.vue'
+import SellerRequestsPage from '@/views/Admin/SellerRequestsPage.vue'
+import SellersPage from '@/views/Admin/SellersPage.vue'
+import ReportsPage from '@/views/Admin/ReportsPage.vue'
+import AdminChatPage from '@/views/Admin/AdminChatPage.vue'
 
 
 const routes = [
+
+  // =========================
+  // Default
+  // =========================
 
   {
     path: '/',
     redirect: '/login'
   },
+
+
+  // =========================
+  // Customer
+  // =========================
 
   {
     path: '/login',
@@ -70,37 +89,56 @@ const routes = [
     component: ProfilePage
   },
 
+
+  // =========================
+  // Admin
+  // =========================
+
   {
-  path: '/admin',
-  component: AdminHomePage
-},
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: AdminLoginPage
+  },
 
-{
-  path: '/admin/requests',
-  component: SellerRequestsPage
-},
+  {
+    path: '/admin',
+    name: 'AdminHome',
+    component: AdminHomePage
+  },
 
-{
-  path: '/admin/sellers',
-  component: SellersPage
-},
+  {
+    path: '/admin/requests',
+    name: 'SellerRequests',
+    component: SellerRequestsPage
+  },
 
-{
-  path: '/admin/reports',
-  component: ReportsPage
-},
+  {
+    path: '/admin/sellers',
+    name: 'Sellers',
+    component: SellersPage
+  },
 
-{
-  path: '/admin/chat',
-  component: AdminChatPage
-}
+  {
+    path: '/admin/reports',
+    name: 'Reports',
+    component: ReportsPage
+  },
+
+  {
+    path: '/admin/chat',
+    name: 'AdminChat',
+    component: AdminChatPage
+  }
 
 ]
 
 
 const router = createRouter({
+
   history: createWebHistory(),
+
   routes
+
 })
 
 
