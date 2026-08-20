@@ -1,35 +1,66 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory
+} from 'vue-router'
 
-// =========================
+
+// ======================================================
 // Customer
-// =========================
+// ======================================================
 
 import LoginPage from '@/views/customer/LoginPage.vue'
+
 import SignupPage from '@/views/customer/SignupPage.vue'
+
 import HomePage from '@/views/customer/HomePage.vue'
+
 import SearchPage from '@/views/customer/SearchPage.vue'
+
 import CategoriesPage from '@/views/customer/CategoriesPage.vue'
+
 import CartPage from '@/views/customer/CartPage.vue'
+
 import OrderPage from '@/views/customer/OrderPage.vue'
+
 import ProfilePage from '@/views/customer/ProfilePage.vue'
 
-// =========================
+import SettingPage from '@/views/customer/SettingPage.vue'
+
+
+// ======================================================
+// Seller
+// ======================================================
+
+import SellerApplicationPage from '@/views/seller/SellerApplicationPage.vue'
+
+
+// ======================================================
 // Admin
-// =========================
+// ======================================================
 
 import AdminLoginPage from '@/views/Admin/AdminLoginPage.vue'
+
 import AdminHomePage from '@/views/Admin/AdminHomePage.vue'
+
 import SellerRequestsPage from '@/views/Admin/SellerRequestsPage.vue'
+
 import SellersPage from '@/views/Admin/SellersPage.vue'
+
 import ReportsPage from '@/views/Admin/ReportsPage.vue'
+
 import AdminChatPage from '@/views/Admin/AdminChatPage.vue'
 
 
+
+// ======================================================
+// Routes
+// ======================================================
+
 const routes = [
 
-  // =========================
+  // ====================================================
   // Default
-  // =========================
+  // ====================================================
 
   {
     path: '/',
@@ -37,9 +68,9 @@ const routes = [
   },
 
 
-  // =========================
+  // ====================================================
   // Customer
-  // =========================
+  // ====================================================
 
   {
     path: '/login',
@@ -47,11 +78,13 @@ const routes = [
     component: LoginPage
   },
 
+
   {
     path: '/signup',
     name: 'Signup',
     component: SignupPage
   },
+
 
   {
     path: '/home',
@@ -59,11 +92,13 @@ const routes = [
     component: HomePage
   },
 
+
   {
     path: '/search',
     name: 'Search',
     component: SearchPage
   },
+
 
   {
     path: '/categories',
@@ -71,17 +106,20 @@ const routes = [
     component: CategoriesPage
   },
 
+
   {
     path: '/cart',
     name: 'Cart',
     component: CartPage
   },
 
+
   {
     path: '/order',
     name: 'Order',
     component: OrderPage
   },
+
 
   {
     path: '/profile',
@@ -90,9 +128,27 @@ const routes = [
   },
 
 
-  // =========================
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: SettingPage
+  },
+
+
+  // ====================================================
+  // Seller
+  // ====================================================
+
+  {
+    path: '/seller-application',
+    name: 'SellerApplication',
+    component: SellerApplicationPage
+  },
+
+
+  // ====================================================
   // Admin
-  // =========================
+  // ====================================================
 
   {
     path: '/admin/login',
@@ -100,11 +156,13 @@ const routes = [
     component: AdminLoginPage
   },
 
+
   {
     path: '/admin',
     name: 'AdminHome',
     component: AdminHomePage
   },
+
 
   {
     path: '/admin/requests',
@@ -112,17 +170,20 @@ const routes = [
     component: SellerRequestsPage
   },
 
+
   {
     path: '/admin/sellers',
     name: 'Sellers',
     component: SellersPage
   },
 
+
   {
     path: '/admin/reports',
     name: 'Reports',
     component: ReportsPage
   },
+
 
   {
     path: '/admin/chat',
@@ -132,6 +193,10 @@ const routes = [
 
 ]
 
+
+// ======================================================
+// Router 생성
+// ======================================================
 
 const router = createRouter({
 

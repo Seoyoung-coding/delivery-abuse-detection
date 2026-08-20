@@ -122,8 +122,14 @@
       </div>
 
 
-      <!-- Settings -->
-      <div class="menu-item">
+      <!-- =========================
+           Settings
+      ========================== -->
+
+      <div
+        class="menu-item"
+        @click="goToSettings"
+      >
 
         <span>
           ⚙ Settings
@@ -239,15 +245,8 @@ const loadCurrentUser = async () => {
   )
 
 
-  // =========================
-  // 중요
-  //
   // token이 없더라도
   // 여기서 login으로 보내지 않는다.
-  //
-  // Profile 화면은 그대로 유지
-  // =========================
-
   if (!token) {
 
     console.log(
@@ -283,10 +282,7 @@ const loadCurrentUser = async () => {
     )
 
 
-    // =========================
     // 401이어도 로그인 화면으로 보내지 않음
-    // =========================
-
     if (response.status === 401) {
 
       console.log(
@@ -297,10 +293,7 @@ const loadCurrentUser = async () => {
     }
 
 
-    // =========================
     // 기타 서버 오류
-    // =========================
-
     if (!response.ok) {
 
       const result =
@@ -315,10 +308,7 @@ const loadCurrentUser = async () => {
     }
 
 
-    // =========================
     // 백엔드에서 email String 반환
-    // =========================
-
     const email =
       await response.text()
 
@@ -406,13 +396,8 @@ const loadSellerStatus = async () => {
     )
 
 
-    // =========================
     // Seller API 인증 실패
-    //
-    // 절대로 logout시키지 않는다.
-    // 그냥 일반 Customer 취급
-    // =========================
-
+    // logout시키지 않고 일반 Customer 취급
     if (
       response.status === 401 ||
       response.status === 403
@@ -429,10 +414,7 @@ const loadSellerStatus = async () => {
     }
 
 
-    // =========================
     // 기타 서버 오류
-    // =========================
-
     if (!response.ok) {
 
       const result =
@@ -450,16 +432,12 @@ const loadSellerStatus = async () => {
     }
 
 
-    // =========================
     // 정상 응답
-    //
-    // 예:
     //
     // {
     //   "seller": true,
     //   "hasStore": true
     // }
-    // =========================
 
     const result =
       await response.json()
@@ -487,8 +465,7 @@ const loadSellerStatus = async () => {
     )
 
 
-    // 오류 발생해도
-    // Profile 페이지는 유지
+    // 오류 발생해도 Profile 페이지 유지
     isSeller.value = false
     hasStore.value = false
 
@@ -519,7 +496,18 @@ const goToMyStore = () => {
 
 
 // =========================
-// 9. Logout
+// 9. Settings 클릭
+// =========================
+
+const goToSettings = () => {
+
+  router.push('/settings')
+
+}
+
+
+// =========================
+// 10. Logout
 // =========================
 
 const logout = () => {
