@@ -41,4 +41,20 @@ public class AdminSellerApplicationService {
 
         application.approve();
     }
+
+    @Transactional
+    public void reject(Long applicationId) {
+
+        SellerApplication application =
+                sellerApplicationRepository.findById(applicationId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Seller application not found")
+                        );
+
+        if (application.getStatus() != SellerApplicationStatus.PENDING) {
+            throw new RuntimeException("Already processed application");
+        }
+
+        application.reject();
+    }
 }

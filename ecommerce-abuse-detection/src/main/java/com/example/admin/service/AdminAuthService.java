@@ -1,10 +1,13 @@
 package com.example.admin.service;
 
 import com.example.admin.dto.request.AdminLoginRequest;
+import com.example.global.jwt.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor // JwtTokenProvider를 자동으로 주입할 수 있게함
 public class AdminAuthService {
 
     @Value("${admin.email}")
@@ -13,15 +16,19 @@ public class AdminAuthService {
     @Value("${admin.password}")
     private String adminPassword;
 
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public void authenticate(AdminLoginRequest request) {
 
-        if (!adminEmail.equals(request.getEmail()) // 이메일이 다르거나
-                || !adminPassword.equals(request.getPassword())) { //pw가 다르면
+    public String authenticate(AdminLoginRequest request) { // void -> string 으로 로그인 검사만 하는게 아니라 JWT 문자열을 반환함
 
-            throw new IllegalArgumentException( // 로그인 실패
+        if (!adminEmail.equals(request.getEmail()) // 이메일 or
+                || !adminPassword.equals(request.getPassword())) { // pw가 다르면
+
+            throw new IllegalArgumentException( // 로그인 불가능
                     "Invalid admin email or password"
             );
         }
+
+        return jwtTokenProvider.createAdminToken(adminEmail);
     }
 }

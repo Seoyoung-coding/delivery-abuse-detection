@@ -22,8 +22,8 @@ public class AdminAuthController {
             @RequestBody AdminLoginRequest request
     ) {
 
-        adminAuthService.authenticate(request);
+        String token = adminAuthService.authenticate(request);
 
-        return ResponseEntity.ok("Admin login successful");
+        return ResponseEntity.ok(token);
     }
 }

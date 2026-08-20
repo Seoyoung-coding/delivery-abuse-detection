@@ -19,7 +19,30 @@ public class JwtTokenProvider {
     private final SecretKey key =
             Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
+
+    // =========================
+    // 1. 일반 Customer 토큰 생성
+    // =========================
+
     public String createToken(String email) {
+        return createToken(email, "CUSTOMER");
+    }
+
+
+    // =========================
+    // 2. Admin 토큰 생성
+    // =========================
+
+    public String createAdminToken(String email) {
+        return createToken(email, "ADMIN");
+    }
+
+
+
+    private String createToken(
+            String email,
+            String role
+    ) {
 
         Date now = new Date();
 
@@ -28,11 +51,17 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
     }
+
+
+    // =========================
+    // JWT에서 email 꺼내기
+    // =========================
 
     public String getEmailFromToken(String token) {
 
@@ -42,5 +71,20 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+
+    // =========================
+    // JWT에서 role 꺼내기
+    // =========================
+
+    public String getRoleFromToken(String token) {
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 }
