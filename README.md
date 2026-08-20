@@ -15,3 +15,9 @@ JWT 문제
 회원 없음
 → CustomerNotFoundException
 → 404 NOT FOUND
+
+
+Admin 로그인
+Email: admin@example.com
+Password: admin1234
+
