@@ -33,6 +33,8 @@ import SettingPage from '@/views/customer/SettingPage.vue'
 
 import SellerApplicationPage from '@/views/seller/SellerApplicationPage.vue'
 
+import StoreDetailPage from '@/views/seller/StoreDetailPage.vue'
+
 
 // ======================================================
 // Admin
@@ -143,6 +145,14 @@ const routes = [
     path: '/seller-application',
     name: 'SellerApplication',
     component: SellerApplicationPage
+  },
+
+
+  // 승인된 Seller의 My Store 관리 페이지
+  {
+    path: '/seller/store',
+    name: 'StoreDetail',
+    component: StoreDetailPage
   },
 
 
