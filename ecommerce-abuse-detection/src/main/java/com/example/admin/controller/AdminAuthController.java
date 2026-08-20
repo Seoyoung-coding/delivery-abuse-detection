@@ -4,14 +4,12 @@ import com.example.admin.dto.request.AdminLoginRequest;
 import com.example.admin.service.AdminAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminAuthController {
 
     private final AdminAuthService adminAuthService;

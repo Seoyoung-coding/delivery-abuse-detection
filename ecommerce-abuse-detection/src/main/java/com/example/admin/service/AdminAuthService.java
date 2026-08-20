@@ -31,4 +31,27 @@ public class AdminAuthService {
 
         return jwtTokenProvider.createAdminToken(adminEmail);
     }
+
+
+    public void validateAdminToken(String authorizationHeader) {
+
+        // Authorization Header가 없거나
+        // Bearer 형식이 아닌 경우
+        if (authorizationHeader == null
+                || !authorizationHeader.startsWith("Bearer ")) {
+
+            throw new RuntimeException("Admin token required");
+        }
+
+        // "Bearer " 부분 제거
+        String token = authorizationHeader.substring(7);
+
+        // JWT에서 role 꺼내기
+        String role = jwtTokenProvider.getRoleFromToken(token);
+
+        // ADMIN인지 확인
+        if (!"ADMIN".equals(role)) {
+            throw new RuntimeException("Admin only");
+        }
+    }
 }
