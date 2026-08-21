@@ -27,8 +27,8 @@ public class Customer {
         this.password = password;
     }
 
-    public void changePassword(String newPassword) {
-        this.password = newPassword;
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 
     private boolean deleted = false;

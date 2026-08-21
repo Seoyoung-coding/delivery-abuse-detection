@@ -121,20 +121,55 @@ public class CustomerService {
     }
 
 
-    // =========================
-    // 비밀번호 변경
-    // =========================
     public void changePassword(
             String authorizationHeader,
             PasswordChangeRequest request
     ) {
 
-        // 1. 현재 사용자 확인
+        // =========================
+        // 1. 현재 로그인 Customer 확인
+        // =========================
+
         Customer customer =
                 getCurrentCustomer(authorizationHeader);
 
 
-        // 2. 새 비밀번호가 없는 경우
+        // =========================
+        // 2. 현재 비밀번호 입력 확인
+        // =========================
+
+        if (
+                request.getCurrentPassword() == null ||
+                        request.getCurrentPassword().isBlank()
+        ) {
+
+            throw new InvalidPasswordException(
+                    "현재 비밀번호를 입력해주세요."
+            );
+        }
+
+
+        // =========================
+        // 3. 현재 비밀번호가 실제 비밀번호와 같은지 확인
+        // =========================
+
+        if (
+                !passwordEncoder.matches(
+                        request.getCurrentPassword(),
+                        customer.getPassword()
+                )
+        ) {
+
+            throw new InvalidPasswordException(
+                    "현재 비밀번호가 올바르지 않습니다."
+            );
+        }
+
+
+        // =========================
+        // 4. 새 비밀번호 입력 확인
+        // =========================
+
         if (
                 request.getNewPassword() == null ||
                         request.getNewPassword().isBlank()
@@ -146,18 +181,29 @@ public class CustomerService {
         }
 
 
-        // 3. 새 비밀번호 암호화
+        // =========================
+        // 5. 새 비밀번호 암호화
+        // =========================
+
         String encodedPassword =
                 passwordEncoder.encode(
                         request.getNewPassword()
                 );
 
 
-        // 4. 변경
-        customer.changePassword(encodedPassword);
+        // =========================
+        // 6. 비밀번호 변경
+        // =========================
+
+        customer.changePassword(
+                encodedPassword
+        );
 
 
-        // 5. 저장
+        // =========================
+        // 7. DB 저장
+        // =========================
+
         customerRepository.save(customer);
     }
 
