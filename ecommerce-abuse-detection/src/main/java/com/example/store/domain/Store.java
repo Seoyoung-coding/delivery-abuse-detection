@@ -39,23 +39,14 @@ public class Store {
     @Column(nullable = false)
     private String name;
 
-
-    // =========================
-    // 4. Store 설명
-    // =========================
-
     private String description;
-
-
-    // =========================
-    // 5. Store 주소
-    // =========================
 
     private String address;
 
+    private String imageUrl;
 
     // =========================
-    // 6. Store 생성
+    // Store 생성
     // =========================
 
     public Store(
@@ -69,5 +60,10 @@ public class Store {
         this.name = name;
         this.description = description;
         this.address = address;
+    }
+
+
+    public void updateImage(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

@@ -352,126 +352,269 @@
 
 <script setup>
 
-// =========================
-// 1. 필요한 Vue 기능 import
-// =========================
 
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
 import { useRoute, useRouter } from 'vue-router'
 
-
-// =========================
-// 2. Router 사용 준비
-// =========================
-
 const route = useRoute()
+
 const router = useRouter()
 
 
-// =========================
-// 3. URL에서 Store ID 가져오기
-// =========================
 
-// 예:
-// /stores/1
-//
-// route.params.id
-// → 1
-
-const storeId = route.params.id
-
-console.log('현재 Store ID:', storeId)
+const storeId = route.params.id // url에서 store 아이디 가져오기
 
 
-// =========================
-// 4. 현재 선택된 Tab
-// =========================
+// 개발 중 확인용
+console.log(
+  '현재 Store ID:',
+  storeId
+)
+
 
 const activeTab = ref('menu')
 
 
-// =========================
-// 5. 찜 상태
-// =========================
-
 const favorite = ref(false)
 
 
+
 // =========================
-// 6. Seller 본인 Store 여부
+// Seller 본인 Store 여부
 // =========================
 
-// 임시 테스트값
+// 현재는 테스트용으로 true
 //
 // true
-// → Seller 화면
-// → Add product / Edit / Delete 표시
+// → 이 Store의 주인
+// → Add Product / Edit / Delete 표시
 //
 // false
-// → Customer 화면
-// → Add to cart 표시
+// → 일반 Customer
+// → Add to Cart 표시
 //
-// 나중에는 JWT를 이용해서
-// 실제 Store 주인인지 백엔드에서 확인할 것
-
+// 나중에는 백엔드에서
+// JWT를 확인해서 실제 Store 주인인지 판단해야 함
 const isSellerOwner = ref(true)
 
 
+
 // =========================
-// 7. 임시 Store 데이터
+// Store 데이터
 // =========================
 
-// 나중에는
+// 처음 페이지가 열렸을 때 사용할 기본값
 //
-// GET /api/stores/{id}
-//
-// 로 백엔드에서 가져올 예정
-
+// 백엔드 요청이 성공하면
+// 아래 값들이 실제 DB 데이터로 변경됨
 const store = ref({
 
-  id: Number(storeId),
+  // Store PK
+  id: null,
 
-  name: 'Yummy Burger',
+  // Store 이름
+  name: '',
 
-  image: '🍔',
+  // Store 설명
+  description: '',
 
+  // Store 주소
+  address: '',
+
+  // Seller가 업로드한 대표 이미지 주소
+  //
+  // 예:
+  // /uploads/stores/abc.jpg
+  imageUrl: null,
+
+
+  // =========================
+  // 아래 값들은 아직 임시
+  // =========================
+
+  // 평점
   rating: 4.8,
 
+  // 리뷰 수
   reviewCount: 128,
 
-  category: 'Burger · American · Fries',
+  // 카테고리
+  category:
+    'Burger · American · Fries',
 
-  description:
-    'Fresh burgers made with quality ingredients.',
+  // 배달 예상 시간
+  deliveryTime:
+    '20–30 min',
 
-  deliveryTime: '20–30 min',
-
-  deliveryFee: '$0',
-
-  address: '123 State Street'
+  // 배달비
+  deliveryFee:
+    '$0'
 
 })
 
 
+
 // =========================
-// 8. 임시 Product 데이터
+// 8. Store 정보 가져오기
 // =========================
 
-// 나중에는 Seller가 등록한 상품을
-// DB에서 가져올 예정
+// async
+// → 서버 요청처럼 시간이 걸리는 작업을
+//   await와 함께 사용하기 위해 필요
+const loadStore = async () => {
 
+  try {
+
+    // =========================
+    // 8-1. 백엔드에 GET 요청
+    // =========================
+
+    // 현재 Store ID를 URL에 넣음
+    //
+    // 예:
+    //
+    // storeId = 1
+    //
+    // ↓
+    //
+    // GET
+    // http://localhost:8080/api/stores/1
+    const response = await fetch(
+      `http://localhost:8080/api/stores/${storeId}`
+    )
+
+
+    // =========================
+    // 8-2. 요청 실패 확인
+    // =========================
+
+    // response.ok는
+    //
+    // 200 ~ 299
+    //
+    // 응답이면 true
+    //
+    // 404 / 500 등이면 false
+    if (!response.ok) {
+
+      throw new Error(
+        '가게 정보를 불러오지 못했습니다.'
+      )
+
+    }
+
+
+    // =========================
+    // 8-3. JSON 데이터로 변환
+    // =========================
+
+    // 백엔드 StoreResponse가 예를 들어:
+    //
+    // {
+    //   "id": 1,
+    //   "name": "Yummy Burger",
+    //   "description": "Fresh Burger",
+    //   "address": "123 State Street",
+    //   "imageUrl": "/uploads/stores/abc.jpg"
+    // }
+    //
+    // 라면
+    //
+    // data에 이 객체가 들어감
+    const data = await response.json()
+
+
+    // =========================
+    // 8-4. Store 데이터 업데이트
+    // =========================
+
+    // 기존 store.value 값을 유지하면서
+    //
+    // 백엔드에서 받은 data를 덮어씀
+    //
+    // 이렇게 하는 이유는
+    //
+    // rating
+    // reviewCount
+    // category
+    // deliveryTime
+    // deliveryFee
+    //
+    // 같은 임시값은 현재 백엔드 응답에 없기 때문
+    store.value = {
+
+      // 기존 값 유지
+      ...store.value,
+
+      // 백엔드 값으로 덮어쓰기
+      ...data
+
+    }
+
+
+    // 개발 중 확인용
+    console.log(
+      '가져온 Store:',
+      store.value
+    )
+
+
+  } catch (error) {
+
+    // 서버 연결 실패
+    // 404
+    // 500
+    //
+    // 등이 발생하면 여기로 옴
+    console.error(
+      'Store 조회 실패:',
+      error
+    )
+
+  }
+
+}
+
+
+
+// =========================
+// 9. 페이지가 처음 열릴 때 실행
+// =========================
+
+// StoreDetailPage가 화면에 나타나는 순간
+// loadStore() 실행
+onMounted(() => {
+
+  loadStore()
+
+})
+
+
+
+// =========================
+// 10. 임시 Product 데이터
+// =========================
+
+// 아직 Product 백엔드는 연결하지 않았기 때문에
+// 기존 임시 데이터 그대로 유지
 const products = ref([
 
   {
+    // Product ID
     id: 1,
 
+    // 상품 이름
     name: 'Cheese Burger',
 
+    // 상품 설명
     description:
       'Beef patty, cheese, lettuce and special sauce',
 
+    // 상품 가격
     price: 12.99,
 
+    // 현재는 실제 사진 대신 emoji 사용
     image: '🍔'
   },
 
@@ -506,72 +649,101 @@ const products = ref([
 ])
 
 
+
 // =========================
-// 9. 뒤로가기
+// 11. 뒤로가기
 // =========================
 
 const goBack = () => {
 
+  // 브라우저 이전 페이지로 이동
   router.back()
 
 }
 
 
+
 // =========================
-// 10. 찜 버튼
+// 12. 찜 버튼
 // =========================
 
 const toggleFavorite = () => {
 
-  favorite.value = !favorite.value
+  // false → true
+  // true → false
+  //
+  // 로 변경
+  favorite.value =
+    !favorite.value
 
 }
 
 
+
 // =========================
-// 11. 상품 등록
+// 13. 상품 등록
 // =========================
 
 const addProduct = () => {
 
-  alert('Product registration page')
+  // 현재는 테스트용 alert
+  alert(
+    'Product registration page'
+  )
 
-  // 나중에 만들 페이지
+
+  // 나중에 Product 등록 페이지를 만들면:
   //
-  // router.push(`/stores/${storeId}/products/new`)
+  // router.push(
+  //   `/stores/${storeId}/products/new`
+  // )
 
 }
 
 
+
 // =========================
-// 12. 상품 수정
+// 14. 상품 수정
 // =========================
 
 const editProduct = (productId) => {
 
-  alert(`Edit Product ID: ${productId}`)
+  // 어떤 상품을 수정할지
+  // productId를 받음
+  alert(
+    `Edit Product ID: ${productId}`
+  )
 
 }
 
 
+
 // =========================
-// 13. 상품 삭제
+// 15. 상품 삭제
 // =========================
 
 const deleteProduct = (productId) => {
 
-  alert(`Delete Product ID: ${productId}`)
+  // 어떤 상품을 삭제할지
+  // productId를 받음
+  alert(
+    `Delete Product ID: ${productId}`
+  )
 
 }
 
 
+
 // =========================
-// 14. 장바구니 추가
+// 16. 장바구니 추가
 // =========================
 
 const addToCart = (product) => {
 
-  alert(`${product.name} added to cart!`)
+  // 클릭한 product 객체를 받아옴
+  alert(
+    `${product.name} added to cart!`
+  )
 
 }
 

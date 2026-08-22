@@ -14,7 +14,6 @@ public interface StoreRepository
     // 1. 이 Seller가 이미 가게를 등록했는지 확인
     boolean existsBySeller(Seller seller);
 
-
     // 2. Seller가 소유한 Store 찾기
     Optional<Store> findBySeller(Seller seller);
 }

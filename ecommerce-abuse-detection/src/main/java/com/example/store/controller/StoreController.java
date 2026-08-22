@@ -1,10 +1,12 @@
 package com.example.store.controller;
 
 import com.example.store.dto.request.StoreCreateRequest;
+import com.example.store.dto.response.StoreResponse;
 import com.example.store.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -38,5 +40,38 @@ public class StoreController {
         return ResponseEntity.ok(
                 "가게 등록 성공"
         );
+    }
+
+    @PatchMapping("/image")
+    public ResponseEntity<String> uploadStoreImage(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestParam("image")
+            MultipartFile image
+    ) {
+
+        String imageUrl =
+                storeService.saveImage(
+                        authorizationHeader,
+                        image
+                );
+
+        return ResponseEntity.ok(imageUrl);
+    }
+
+    // =========================
+    // 가게 상세 조회
+    // =========================
+    @GetMapping("/{storeId}")
+    public ResponseEntity<StoreResponse> getStore(
+            @PathVariable Long storeId
+    ) {
+
+        StoreResponse store =
+                storeService.getStore(storeId);
+
+        return ResponseEntity.ok(store);
     }
 }
