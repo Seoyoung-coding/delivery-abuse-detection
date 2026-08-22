@@ -2,26 +2,58 @@
 
   <div class="page">
 
-    <!-- =========================
-         Store Header Image
-    ========================== -->
-    <div class="store-header">
+<!-- =========================
+     Store Header Image
+========================== -->
+<div class="store-header">
 
-      <!-- 뒤로가기 -->
-      <button
-        class="back-button"
-        @click="goBack"
-      >
-        ‹
-      </button>
+  <!-- 뒤로가기 -->
+  <button
+    class="back-button"
+    @click="goBack"
+  >
+    ‹
+  </button>
 
 
-      <!-- 임시 대표 이미지 -->
-      <div class="header-food">
-        {{ store.image }}
-      </div>
+  <!-- 실제 대표 이미지 -->
+  <img
+    v-if="store.imageUrl"
+    :src="`http://localhost:8080${store.imageUrl}`"
+    class="store-header-image"
+  />
 
-    </div>
+
+  <!-- 아직 이미지가 없는 경우 -->
+  <div
+    v-else
+    class="header-food"
+  >
+  </div>
+
+
+  <!-- Seller 이미지 업로드 -->
+  <div
+    v-if="isSellerOwner"
+    class="image-upload-area"
+  >
+
+    <input
+      type="file"
+      accept="image/*"
+      @change="handleImageChange"
+    />
+
+<button
+  class="upload-image-button"
+  @click="uploadImage"
+>
+  Upload Image
+</button>
+
+  </div>
+
+</div>
 
 
     <!-- =========================
@@ -119,6 +151,7 @@
         </button>
 
       </div>
+      
 
     </section>
 
@@ -352,102 +385,160 @@
 
 <script setup>
 
+// =========================
+// 1. Vue 기능 import
+// =========================
 
-import { ref, onMounted } from 'vue'
+// ref
+// → 값이 변경되면 화면도 자동으로 변경됨
+//
+// onMounted
+// → StoreDetailPage가 처음 열렸을 때
+//   실행할 코드를 지정할 때 사용
+import {
+  ref,
+  onMounted
+} from 'vue'
 
-import { useRoute, useRouter } from 'vue-router'
 
+// useRoute
+// → 현재 URL의 parameter를 가져오기 위해 사용
+//
+// useRouter
+// → 뒤로가기 / 페이지 이동 등에 사용
+import {
+  useRoute,
+  useRouter
+} from 'vue-router'
+
+
+
+// =========================
+// 2. Router 사용 준비
+// =========================
+
+// 현재 URL 정보
 const route = useRoute()
 
+
+// 페이지 이동 기능
 const router = useRouter()
 
 
 
-const storeId = route.params.id // url에서 store 아이디 가져오기
+// =========================
+// 3. URL에서 Store ID 가져오기
+// =========================
+
+// 예:
+//
+// /stores/1
+//
+// 이라면:
+//
+// route.params.id
+// → "1"
+const storeId =
+  route.params.id
 
 
-// 개발 중 확인용
 console.log(
   '현재 Store ID:',
   storeId
 )
 
 
-const activeTab = ref('menu')
 
+// =========================
+// 4. 현재 선택된 Tab
+// =========================
 
-const favorite = ref(false)
+// 기본으로 menu 탭 선택
+const activeTab =
+  ref('menu')
 
 
 
 // =========================
-// Seller 본인 Store 여부
+// 5. 찜 상태
 // =========================
 
-// 현재는 테스트용으로 true
+// false → 찜 안 함
+// true  → 찜 함
+const favorite =
+  ref(false)
+
+
+
+// =========================
+// 6. Seller 본인 Store 여부
+// =========================
+
+// ⚠ 현재는 임시값
 //
 // true
-// → 이 Store의 주인
-// → Add Product / Edit / Delete 표시
+// → Seller 전용 버튼 표시
 //
 // false
-// → 일반 Customer
-// → Add to Cart 표시
+// → Customer용 버튼 표시
 //
-// 나중에는 백엔드에서
-// JWT를 확인해서 실제 Store 주인인지 판단해야 함
-const isSellerOwner = ref(true)
+// 나중에 JWT + Seller + Store 관계를
+// 백엔드에서 확인해서 변경해야 함
+const isSellerOwner =
+  ref(true)
 
 
 
 // =========================
-// Store 데이터
+// 7. Store 데이터
 // =========================
 
-// 처음 페이지가 열렸을 때 사용할 기본값
+// 처음에는 빈 값을 가지고 있다가
 //
-// 백엔드 요청이 성공하면
-// 아래 값들이 실제 DB 데이터로 변경됨
+// GET /api/stores/{storeId}
+//
+// 요청이 성공하면
+// 실제 DB 데이터로 변경됨
 const store = ref({
 
-  // Store PK
+  // Store ID
   id: null,
 
-  // Store 이름
+
+  // 가게 이름
   name: '',
 
-  // Store 설명
+
+  // 가게 설명
   description: '',
 
-  // Store 주소
+
+  // 가게 주소
   address: '',
 
-  // Seller가 업로드한 대표 이미지 주소
+
+  // Seller가 등록한 대표 이미지 URL
   //
   // 예:
+  //
   // /uploads/stores/abc.jpg
   imageUrl: null,
 
 
   // =========================
-  // 아래 값들은 아직 임시
+  // 아직 백엔드 연결 안 한 임시값
   // =========================
 
-  // 평점
   rating: 4.8,
 
-  // 리뷰 수
   reviewCount: 128,
 
-  // 카테고리
   category:
     'Burger · American · Fries',
 
-  // 배달 예상 시간
   deliveryTime:
     '20–30 min',
 
-  // 배달비
   deliveryFee:
     '$0'
 
@@ -456,46 +547,26 @@ const store = ref({
 
 
 // =========================
-// 8. Store 정보 가져오기
+// 8. Store 상세정보 조회
 // =========================
 
-// async
-// → 서버 요청처럼 시간이 걸리는 작업을
-//   await와 함께 사용하기 위해 필요
 const loadStore = async () => {
 
   try {
 
-    // =========================
-    // 8-1. 백엔드에 GET 요청
-    // =========================
-
-    // 현재 Store ID를 URL에 넣음
+    // 현재 URL의 storeId를 이용해서
+    // 백엔드에 해당 Store 조회 요청
     //
     // 예:
     //
-    // storeId = 1
-    //
-    // ↓
-    //
-    // GET
-    // http://localhost:8080/api/stores/1
-    const response = await fetch(
-      `http://localhost:8080/api/stores/${storeId}`
-    )
+    // GET /api/stores/1
+    const response =
+      await fetch(
+        `http://localhost:8080/api/stores/${storeId}`
+      )
 
 
-    // =========================
-    // 8-2. 요청 실패 확인
-    // =========================
-
-    // response.ok는
-    //
-    // 200 ~ 299
-    //
-    // 응답이면 true
-    //
-    // 404 / 500 등이면 false
+    // 200번대가 아니면 실패 처리
     if (!response.ok) {
 
       throw new Error(
@@ -505,55 +576,31 @@ const loadStore = async () => {
     }
 
 
-    // =========================
-    // 8-3. JSON 데이터로 변환
-    // =========================
-
-    // 백엔드 StoreResponse가 예를 들어:
-    //
-    // {
-    //   "id": 1,
-    //   "name": "Yummy Burger",
-    //   "description": "Fresh Burger",
-    //   "address": "123 State Street",
-    //   "imageUrl": "/uploads/stores/abc.jpg"
-    // }
-    //
-    // 라면
-    //
-    // data에 이 객체가 들어감
-    const data = await response.json()
+    // 백엔드 JSON 응답을
+    // JavaScript 객체로 변환
+    const data =
+      await response.json()
 
 
-    // =========================
-    // 8-4. Store 데이터 업데이트
-    // =========================
-
-    // 기존 store.value 값을 유지하면서
+    // 기존 임시값은 유지하면서
+    // 백엔드에서 받은 값으로 덮어씀
     //
-    // 백엔드에서 받은 data를 덮어씀
+    // 백엔드에서 현재 오는 값:
     //
-    // 이렇게 하는 이유는
-    //
-    // rating
-    // reviewCount
-    // category
-    // deliveryTime
-    // deliveryFee
-    //
-    // 같은 임시값은 현재 백엔드 응답에 없기 때문
+    // id
+    // name
+    // description
+    // address
+    // imageUrl
     store.value = {
 
-      // 기존 값 유지
       ...store.value,
 
-      // 백엔드 값으로 덮어쓰기
       ...data
 
     }
 
 
-    // 개발 중 확인용
     console.log(
       '가져온 Store:',
       store.value
@@ -562,11 +609,6 @@ const loadStore = async () => {
 
   } catch (error) {
 
-    // 서버 연결 실패
-    // 404
-    // 500
-    //
-    // 등이 발생하면 여기로 옴
     console.error(
       'Store 조회 실패:',
       error
@@ -576,14 +618,43 @@ const loadStore = async () => {
 
 }
 
+// =========================
+// Store 대표 이미지 선택
+// =========================
+
+// Seller가 선택한 실제 이미지 파일을 저장
+const selectedImage = ref(null)
+
+
+// input에서 사진을 선택했을 때 실행
+const handleImageChange = (event) => {
+
+  // 사용자가 선택한 첫 번째 파일
+  const file = event.target.files[0]
+
+
+  // 아무 파일도 선택하지 않았다면 종료
+  if (!file) {
+    return
+  }
+
+
+  // 선택한 파일 저장
+  selectedImage.value = file
+
+
+  // 개발 중 확인용
+  console.log(
+    '선택한 이미지:',
+    selectedImage.value
+  )
+}
 
 
 // =========================
-// 9. 페이지가 처음 열릴 때 실행
+// 9. 페이지 처음 열릴 때 Store 조회
 // =========================
 
-// StoreDetailPage가 화면에 나타나는 순간
-// loadStore() 실행
 onMounted(() => {
 
   loadStore()
@@ -596,54 +667,64 @@ onMounted(() => {
 // 10. 임시 Product 데이터
 // =========================
 
-// 아직 Product 백엔드는 연결하지 않았기 때문에
-// 기존 임시 데이터 그대로 유지
+// Product 백엔드는 아직 연결하지 않았으므로
+// 일단 기존 테스트 데이터 유지
 const products = ref([
 
   {
-    // Product ID
+
     id: 1,
 
-    // 상품 이름
-    name: 'Cheese Burger',
+    name:
+      'Cheese Burger',
 
-    // 상품 설명
     description:
       'Beef patty, cheese, lettuce and special sauce',
 
-    // 상품 가격
-    price: 12.99,
+    price:
+      12.99,
 
-    // 현재는 실제 사진 대신 emoji 사용
-    image: '🍔'
+    image:
+      '🍔'
+
   },
 
 
   {
+
     id: 2,
 
-    name: 'Double Burger',
+    name:
+      'Double Burger',
 
     description:
       'Two beef patties with double cheese',
 
-    price: 15.99,
+    price:
+      15.99,
 
-    image: '🍔'
+    image:
+      '🍔'
+
   },
 
 
   {
+
     id: 3,
 
-    name: 'French Fries',
+    name:
+      'French Fries',
 
     description:
       'Crispy golden french fries',
 
-    price: 4.99,
+    price:
+      4.99,
 
-    image: '🍟'
+    image:
+      '🍟'
+
   }
 
 ])
@@ -656,7 +737,6 @@ const products = ref([
 
 const goBack = () => {
 
-  // 브라우저 이전 페이지로 이동
   router.back()
 
 }
@@ -669,10 +749,6 @@ const goBack = () => {
 
 const toggleFavorite = () => {
 
-  // false → true
-  // true → false
-  //
-  // 로 변경
   favorite.value =
     !favorite.value
 
@@ -686,13 +762,12 @@ const toggleFavorite = () => {
 
 const addProduct = () => {
 
-  // 현재는 테스트용 alert
   alert(
     'Product registration page'
   )
 
 
-  // 나중에 Product 등록 페이지를 만들면:
+  // 나중에 Product 등록 페이지 만들면:
   //
   // router.push(
   //   `/stores/${storeId}/products/new`
@@ -706,10 +781,10 @@ const addProduct = () => {
 // 14. 상품 수정
 // =========================
 
-const editProduct = (productId) => {
+const editProduct = (
+  productId
+) => {
 
-  // 어떤 상품을 수정할지
-  // productId를 받음
   alert(
     `Edit Product ID: ${productId}`
   )
@@ -722,10 +797,10 @@ const editProduct = (productId) => {
 // 15. 상품 삭제
 // =========================
 
-const deleteProduct = (productId) => {
+const deleteProduct = (
+  productId
+) => {
 
-  // 어떤 상품을 삭제할지
-  // productId를 받음
   alert(
     `Delete Product ID: ${productId}`
   )
@@ -738,13 +813,100 @@ const deleteProduct = (productId) => {
 // 16. 장바구니 추가
 // =========================
 
-const addToCart = (product) => {
+const addToCart = (
+  product
+) => {
 
-  // 클릭한 product 객체를 받아옴
   alert(
     `${product.name} added to cart!`
   )
 
+}
+
+// =========================
+// Store 대표 이미지 업로드
+// =========================
+
+const uploadImage = async () => {
+
+  // 사진을 선택하지 않았으면 중단
+  if (!selectedImage.value) {
+
+    alert('이미지를 먼저 선택해주세요.')
+
+    return
+  }
+
+
+  // 로그인할 때 저장한 JWT
+  const token =
+    localStorage.getItem('token')
+
+
+  // 파일 전송용 FormData 생성
+  const formData =
+    new FormData()
+
+
+  // 백엔드의 @RequestParam("image")와 이름을 맞춤
+  formData.append(
+    'image',
+    selectedImage.value
+  )
+
+
+  try {
+
+    // 우리가 만든 이미지 업로드 API 호출
+    const response =
+      await fetch(
+        'http://localhost:8080/api/stores/image',
+        {
+          method: 'PATCH',
+
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+
+          body: formData
+        }
+      )
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        '이미지 업로드에 실패했습니다.'
+      )
+    }
+
+
+    // 백엔드에서 반환한 imageUrl
+    const imageUrl =
+      await response.text()
+
+
+    // 업로드 직후 화면 이미지도 바로 변경
+    store.value.imageUrl =
+      imageUrl
+
+
+    alert(
+      '대표 이미지가 변경되었습니다.'
+    )
+
+
+  } catch (error) {
+
+    console.error(
+      '이미지 업로드 실패:',
+      error
+    )
+
+    alert(
+      '이미지 업로드에 실패했습니다.'
+    )
+  }
 }
 
 </script>
@@ -806,6 +968,29 @@ const addToCart = (product) => {
       #ffd8bb
     );
 
+}
+
+.image-upload-area {
+  position: absolute !important;
+
+  right: 20px !important;
+  bottom: 15px !important;
+
+  top: auto !important;
+  left: auto !important;
+
+  width: auto !important;
+  margin: 0 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  gap: 10px;
+
+  transform: none !important;
+
+  z-index: 20;
 }
 
 
@@ -1315,5 +1500,18 @@ const addToCart = (product) => {
   font-size: 12px;
 
 }
+
+.image-upload-area {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  z-index: 10;
+}
+
 
 </style>
