@@ -35,22 +35,23 @@ import SellerApplicationPage from '@/views/seller/SellerApplicationPage.vue'
 
 import StoreDetailPage from '@/views/seller/StoreDetailPage.vue'
 
+import SellerChatPage from '@/views/seller/SellerChatPage.vue'
 
 // ======================================================
 // Admin
 // ======================================================
 
-import AdminLoginPage from '@/views/Admin/AdminLoginPage.vue'
+import AdminLoginPage from '@/views/admin/AdminLoginPage.vue'
 
-import AdminHomePage from '@/views/Admin/AdminHomePage.vue'
+import AdminHomePage from '@/views/admin/AdminHomePage.vue'
 
-import SellerRequestsPage from '@/views/Admin/SellerRequestsPage.vue'
+import SellerRequestsPage from '@/views/admin/SellerRequestsPage.vue'
 
-import SellersPage from '@/views/Admin/SellersPage.vue'
+import SellersPage from '@/views/admin/SellersPage.vue'
 
-import ReportsPage from '@/views/Admin/ReportsPage.vue'
+import ReportsPage from '@/views/admin/ReportsPage.vue'
 
-import AdminChatPage from '@/views/Admin/AdminChatPage.vue'
+import AdminChatPage from '@/views/admin/AdminChatPage.vue'
 
 
 
@@ -155,6 +156,11 @@ const routes = [
     component: StoreDetailPage
   },
 
+  {
+  path: '/seller/chat',
+  name: 'seller-chat',
+  component: SellerChatPage
+  },
 
   // ====================================================
   // Admin
@@ -199,6 +205,12 @@ const routes = [
     path: '/admin/chat',
     name: 'AdminChat',
     component: AdminChatPage
+  },
+
+  {
+  path: '/admin/chat',
+  name: 'admin-chat',
+  component: AdminChatPage
   }
 
 ]

@@ -128,31 +128,59 @@
       </div>
 
 
-      <!-- 찜 / 공유 -->
-      <div class="store-actions">
+<!-- 찜 / 공유 -->
+<div class="store-actions">
 
-        <button @click="toggleFavorite">
+  <button @click="toggleFavorite">
 
-          <span v-if="favorite">
-            ♥
-          </span>
+    <span v-if="favorite">
+      ♥
+    </span>
 
-          <span v-else>
-            ♡
-          </span>
+    <span v-else>
+      ♡
+    </span>
 
-          Favorite
+    Favorite
 
-        </button>
+  </button>
 
 
-        <button>
-          ⤴ Share
-        </button>
+  <button>
+    ⤴ Share
+  </button>
 
-      </div>
+</div>
+
+
+<!-- Admin Support -->
+<button
+  class="chat-button"
+  @click="goToChat"
+>
+  <span class="chat-icon">
+    💬
+  </span>
+
+  <div class="chat-text">
+
+    <strong>
+      Admin Support
+    </strong>
+
+    <span>
+      Chat with YamiYumi Admin
+    </span>
+
+  </div>
+
+  <span class="arrow">
+    ›
+  </span>
+
+</button>
+
       
-
     </section>
 
 
@@ -743,17 +771,27 @@ const goBack = () => {
 
 
 
+
+// // =========================
+// // 12. 찜 버튼
+// // =========================
+
+// const toggleFavorite = () => {
+
+//   favorite.value =
+//     !favorite.value
+
+// }
+
 // =========================
-// 12. 찜 버튼
+// 12. Seller Chat
 // =========================
 
-const toggleFavorite = () => {
+const goToChat = () => {
 
-  favorite.value =
-    !favorite.value
+  router.push('/seller/chat')
 
 }
-
 
 
 // =========================
@@ -1511,6 +1549,46 @@ const uploadImage = async () => {
   gap: 10px;
 
   z-index: 10;
+}
+
+.chat-button {
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 14px;
+
+  margin-bottom: 20px;
+
+  border: none;
+  border-radius: 14px;
+
+  background-color: #fff4eb;
+
+  color: #ff6b00;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+}
+
+
+.chat-button:hover {
+
+  background-color: #ffe6d2;
+
 }
 
 
