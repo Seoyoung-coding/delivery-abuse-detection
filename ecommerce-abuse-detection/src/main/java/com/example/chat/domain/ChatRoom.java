@@ -16,7 +16,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne // seller 한명당 1개의 채팅방
     @JoinColumn(
             name = "seller_id",
             nullable = false,

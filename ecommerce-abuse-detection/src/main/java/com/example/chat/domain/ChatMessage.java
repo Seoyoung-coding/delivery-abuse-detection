@@ -1,5 +1,6 @@
 package com.example.chat.domain;
 
+import com.example.chat.enums.MessageSender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
