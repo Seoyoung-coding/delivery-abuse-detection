@@ -202,12 +202,6 @@ const routes = [
 
 
   {
-    path: '/admin/chat',
-    name: 'AdminChat',
-    component: AdminChatPage
-  },
-
-  {
   path: '/admin/chat',
   name: 'admin-chat',
   component: AdminChatPage

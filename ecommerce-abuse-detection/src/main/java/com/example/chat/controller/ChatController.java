@@ -115,4 +115,52 @@ public class ChatController {
 
         return response;
     }
+
+    // =====================================================
+// Admin : 전체 Seller 채팅방 조회
+// GET /api/chat/admin/rooms
+// =====================================================
+    @GetMapping("/admin/rooms")
+    public ResponseEntity<List<Map<String, Object>>> getAdminRooms() {
+
+        List<Map<String, Object>> rooms =
+                chatService
+                        .getAdminRooms()
+                        .stream()
+                        .map(room -> {
+
+                            Map<String, Object> response =
+                                    new LinkedHashMap<>();
+
+                            response.put(
+                                    "roomId",
+                                    room.getId()
+                            );
+
+                            response.put(
+                                    "sellerId",
+                                    room.getSeller().getId()
+                            );
+
+                            response.put(
+                                    "sellerEmail",
+                                    room.getSeller()
+                                            .getCustomer()
+                                            .getEmail()
+                            );
+
+                            response.put(
+                                    "createdAt",
+                                    room.getCreatedAt()
+                            );
+
+                            return response;
+                        })
+                        .toList();
+
+
+        return ResponseEntity.ok(
+                rooms
+        );
+    }
 }

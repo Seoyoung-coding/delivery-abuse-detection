@@ -133,4 +133,14 @@ public class ChatService {
                         chatRoom
                 );
     }
+
+    // admin
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getAdminRooms() {
+
+        return chatRoomRepository
+                .findAllByOrderByCreatedAtDesc();
+    }
+
 }
