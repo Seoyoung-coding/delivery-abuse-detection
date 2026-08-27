@@ -1,15 +1,21 @@
 package com.example.admin.service;
 
-import com.example.admin.dto.request.AdminLoginRequest;
 import com.example.admin.dto.response.AdminSellerApplicationResponse;
+import com.example.admin.repository.SellerApplicationRepository;
+
+import com.example.seller.domain.Seller;
 import com.example.seller.domain.SellerApplication;
 import com.example.seller.enums.SellerApplicationStatus;
-import com.example.admin.repository.SellerApplicationRepository;
+import com.example.seller.repository.SellerRepository;
+
 import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -17,44 +23,104 @@ public class AdminSellerApplicationService {
 
     private final SellerApplicationRepository sellerApplicationRepository;
 
+    private final SellerRepository sellerRepository;
+
+
+    // =====================================================
+    // Admin : Pending Seller 신청 목록 조회
+    // =====================================================
     public List<AdminSellerApplicationResponse> getPendingApplications() {
+
         List<SellerApplication> applications =
                 sellerApplicationRepository.findByStatus(
                         SellerApplicationStatus.PENDING
                 );
 
-        return applications.stream() // List 안에 있는 객체를 하나씩 꺼내서 처리할 준비
-                .map(AdminSellerApplicationResponse::new) // 각각의 데이터를 다른 형태로 바꿔라.
+
+        return applications
+                .stream()
+                .map(AdminSellerApplicationResponse::new)
                 .toList();
     }
 
+
+    // =====================================================
+    // Admin : Seller 신청 승인
+    // =====================================================
     @Transactional
     public void approve(Long applicationId) {
 
+        // 1. 신청 찾기
         SellerApplication application =
-                sellerApplicationRepository.findById(applicationId)
+                sellerApplicationRepository
+                        .findById(applicationId)
                         .orElseThrow(
                                 () -> new IllegalArgumentException(
                                         "Seller 신청을 찾을 수 없습니다."
                                 )
                         );
 
+
+        // 2. 이미 처리된 신청인지 확인
+        if (
+                application.getStatus()
+                        != SellerApplicationStatus.PENDING
+        ) {
+
+            throw new RuntimeException(
+                    "Already processed application"
+            );
+        }
+
+
+        // 3. 신청 상태를 APPROVED로 변경
         application.approve();
+
+
+        // 4. 실제 Seller 객체 생성
+        Seller seller =
+                new Seller(
+                        application.getCustomer()
+                );
+
+
+        // 5. seller 테이블에 저장
+        sellerRepository.save(
+                seller
+        );
     }
 
+
+    // =====================================================
+    // Admin : Seller 신청 거절
+    // =====================================================
     @Transactional
     public void reject(Long applicationId) {
 
+        // 1. 신청 찾기
         SellerApplication application =
-                sellerApplicationRepository.findById(applicationId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Seller application not found")
+                sellerApplicationRepository
+                        .findById(applicationId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Seller application not found"
+                                )
                         );
 
-        if (application.getStatus() != SellerApplicationStatus.PENDING) {
-            throw new RuntimeException("Already processed application");
+
+        // 2. 이미 처리된 신청인지 확인
+        if (
+                application.getStatus()
+                        != SellerApplicationStatus.PENDING
+        ) {
+
+            throw new RuntimeException(
+                    "Already processed application"
+            );
         }
 
+
+        // 3. 신청 거절
         application.reject();
     }
 }
