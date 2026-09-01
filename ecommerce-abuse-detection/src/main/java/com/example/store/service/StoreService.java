@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -244,5 +245,29 @@ public class StoreService {
                 store.getAddress(),
                 store.getImageUrl()
         );
+    }
+    // =========================
+    // 전체 가게 목록 조회
+    // =========================
+    public List<StoreResponse> getAllStores() {
+
+        // 1. DB에 등록된 모든 Store 조회
+        return storeRepository
+                .findAll()
+                .stream()
+
+                // 2. Store Entity → StoreResponse DTO 변환
+                .map(store ->
+                        new StoreResponse(
+                                store.getId(),
+                                store.getName(),
+                                store.getDescription(),
+                                store.getAddress(),
+                                store.getImageUrl()
+                        )
+                )
+
+                // 3. List<StoreResponse>로 반환
+                .toList();
     }
 }

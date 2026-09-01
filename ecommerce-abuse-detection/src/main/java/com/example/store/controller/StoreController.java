@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/stores")
@@ -73,5 +75,19 @@ public class StoreController {
                 storeService.getStore(storeId);
 
         return ResponseEntity.ok(store);
+    }
+
+    // =========================
+    // 전체 가게 목록 조회
+    // =========================
+    @GetMapping
+    public ResponseEntity<List<StoreResponse>> getAllStores() {
+
+        List<StoreResponse> stores =
+                storeService.getAllStores();
+
+        return ResponseEntity.ok(
+                stores
+        );
     }
 }
