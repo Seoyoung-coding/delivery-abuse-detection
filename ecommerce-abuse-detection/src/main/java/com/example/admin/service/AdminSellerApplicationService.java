@@ -8,6 +8,9 @@ import com.example.seller.domain.SellerApplication;
 import com.example.seller.enums.SellerApplicationStatus;
 import com.example.seller.repository.SellerRepository;
 
+import com.example.store.domain.Store;
+import com.example.store.repository.StoreRepository;
+
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,9 @@ public class AdminSellerApplicationService {
     private final SellerApplicationRepository sellerApplicationRepository;
 
     private final SellerRepository sellerRepository;
+
+    // Store 저장을 위해 추가
+    private final StoreRepository storeRepository;
 
 
     // =====================================================
@@ -73,20 +79,36 @@ public class AdminSellerApplicationService {
         }
 
 
-        // 3. 신청 상태를 APPROVED로 변경
+        // 3. 신청 상태 APPROVED
         application.approve();
 
 
-        // 4. 실제 Seller 객체 생성
+        // 4. Seller 생성
         Seller seller =
                 new Seller(
                         application.getCustomer()
                 );
 
 
-        // 5. seller 테이블에 저장
+        // 5. Seller DB 저장
         sellerRepository.save(
                 seller
+        );
+
+
+        // 6. SellerApplication에서 입력했던 정보로 Store 생성
+        Store store =
+                new Store(
+                        seller,
+                        application.getStoreName(),
+                        application.getDescription(),
+                        application.getAddress()
+                );
+
+
+        // 7. Store DB 저장
+        storeRepository.save(
+                store
         );
     }
 
