@@ -5,6 +5,7 @@ import com.example.customer.repository.CustomerRepository;
 import com.example.global.jwt.JwtTokenProvider;
 import com.example.product.domain.Product;
 import com.example.product.dto.request.ProductCreateRequest;
+import com.example.product.dto.response.ProductResponse;
 import com.example.product.repository.ProductRepository;
 import com.example.seller.domain.Seller;
 import com.example.seller.repository.SellerRepository;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -159,5 +161,72 @@ public class ProductService {
                     "이미지 저장에 실패했습니다."
             );
         }
+    }
+
+    // =========================
+    // 내 Store 상품 목록 조회
+    // =========================
+    public List<ProductResponse> getMyStoreProducts(
+            String authorizationHeader
+    ) {
+
+        // 1. Bearer 형식 확인
+        if (
+                authorizationHeader == null ||
+                        !authorizationHeader.startsWith("Bearer ")
+        ) {
+            throw new RuntimeException(
+                    "잘못된 토큰 형식입니다."
+            );
+        }
+
+
+        // 2. JWT 추출
+        String token =
+                authorizationHeader.substring(7);
+
+
+        // 3. JWT에서 email 추출
+        String email =
+                jwtTokenProvider.getEmailFromToken(token);
+
+
+        // 4. 현재 로그인한 Customer 찾기
+        Customer customer = customerRepository
+                .findByEmailAndDeletedFalse(email)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "존재하지 않는 사용자입니다."
+                        )
+                );
+
+
+        // 5. Customer에 연결된 Seller 찾기
+        Seller seller = sellerRepository
+                .findByCustomer(customer)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "판매자만 상품을 조회할 수 있습니다."
+                        )
+                );
+
+
+        // 6. Seller의 Store 찾기
+        Store store = storeRepository
+                .findBySeller(seller)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "등록된 가게가 없습니다."
+                        )
+                );
+
+
+        // 7. 해당 Store의 Product들을 조회하고
+        // ProductResponse로 변환해서 반환
+        return productRepository
+                .findByStore(store)
+                .stream()
+                .map(ProductResponse::new)
+                .toList();
     }
 }

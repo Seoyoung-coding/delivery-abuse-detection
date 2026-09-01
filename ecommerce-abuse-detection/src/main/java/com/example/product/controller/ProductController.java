@@ -1,10 +1,13 @@
 package com.example.product.controller;
 
 import com.example.product.dto.request.ProductCreateRequest;
+import com.example.product.dto.response.ProductResponse;
 import com.example.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -39,5 +42,23 @@ public class ProductController {
         return ResponseEntity.ok(
                 "상품 등록 성공"
         );
+    }
+
+    // =========================
+    // Seller Store 상품 목록 조회
+    // =========================
+    @GetMapping("/my-store")
+    public ResponseEntity<List<ProductResponse>> getMyStoreProducts(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
+    ) {
+
+        List<ProductResponse> products =
+                productService.getMyStoreProducts(
+                        authorizationHeader
+                );
+
+        return ResponseEntity.ok(products);
     }
 }
