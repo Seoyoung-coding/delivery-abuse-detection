@@ -1,8 +1,14 @@
 package com.example.admin.controller;
 
-public class AdminReturnlessController {
-}
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+// - 현재 적용 중인 threshold 조회
+// - 새 데이터 기준 추천 threshold 조회
+// - threshold 재계산 요청
+// - 새로운 policy 활성화
+// - threshold 변경 이력 조회
+// - refund decision 기록 조회
 
-// - PENDING 상태의 Seller 신청 목록 조회
-// - Seller 신청 승인
-// - Seller 신청 거절
+@RestController
+@RequestMapping("/api/admin/returnless")
+public class AdminReturnlessController {}
