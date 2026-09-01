@@ -799,18 +799,9 @@ const goToChat = () => {
 // =========================
 
 const addProduct = () => {
-
-  alert(
-    'Product registration page'
-  )
-
-
-  // 나중에 Product 등록 페이지 만들면:
-  //
-  // router.push(
-  //   `/stores/${storeId}/products/new`
-  // )
-
+  router.push({
+    name: 'product-register'
+  })
 }
 
 

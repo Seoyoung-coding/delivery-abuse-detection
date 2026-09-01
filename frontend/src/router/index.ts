@@ -9,21 +9,13 @@ import {
 // ======================================================
 
 import LoginPage from '@/views/customer/LoginPage.vue'
-
 import SignupPage from '@/views/customer/SignupPage.vue'
-
 import HomePage from '@/views/customer/HomePage.vue'
-
 import SearchPage from '@/views/customer/SearchPage.vue'
-
 import CategoriesPage from '@/views/customer/CategoriesPage.vue'
-
 import CartPage from '@/views/customer/CartPage.vue'
-
 import OrderPage from '@/views/customer/OrderPage.vue'
-
 import ProfilePage from '@/views/customer/ProfilePage.vue'
-
 import SettingPage from '@/views/customer/SettingPage.vue'
 
 
@@ -36,6 +28,8 @@ import SellerApplicationPage from '@/views/seller/SellerApplicationPage.vue'
 import StoreDetailPage from '@/views/seller/StoreDetailPage.vue'
 
 import SellerChatPage from '@/views/seller/SellerChatPage.vue'
+
+import ProductRegisterPage from '@/views/seller/ProductRegisterPage.vue'
 
 // ======================================================
 // Admin
@@ -160,6 +154,12 @@ const routes = [
   path: '/seller/chat',
   name: 'seller-chat',
   component: SellerChatPage
+  },
+
+  {
+  path: '/seller/products/register',
+  name: 'product-register',
+  component: ProductRegisterPage
   },
 
   // ====================================================
