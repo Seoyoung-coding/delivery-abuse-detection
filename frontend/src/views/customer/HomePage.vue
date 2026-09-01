@@ -214,10 +214,7 @@
       </div>
 
 
-      <!--
-        stores 배열 안에 있는 가게들을
-        v-for로 하나씩 반복해서 출력
-      -->
+      <!-- 실제 DB Store 목록 -->
       <div
         v-for="store in stores"
         :key="store.id"
@@ -228,7 +225,15 @@
         <!-- 1. Store 대표 이미지 -->
         <div class="store-image">
 
-          {{ store.image }}
+          <img
+            v-if="store.imageUrl"
+            :src="`http://localhost:8080${store.imageUrl}`"
+            :alt="store.name"
+          />
+
+          <span v-else>
+            No image
+          </span>
 
         </div>
 
@@ -238,60 +243,20 @@
 
           <!-- 가게 이름 -->
           <h3 class="store-name">
-
             {{ store.name }}
-
-            <!-- 특정 Store에 badge가 있으면 표시 -->
-            <span
-              v-if="store.badge"
-              class="store-badge"
-            >
-              {{ store.badge }}
-            </span>
-
           </h3>
 
 
-          <!-- 평점 -->
-          <div class="rating-row">
-
-            <span class="star">
-              ★
-            </span>
-
-            <strong>
-              {{ store.rating }}
-            </strong>
-
-            <span class="review-count">
-              ({{ store.reviewCount }}+)
-            </span>
-
-            <span class="review-text">
-              Reviews
-            </span>
-
-          </div>
-
-
-          <!-- 카테고리 -->
-          <p class="store-category">
-            {{ store.category }}
+          <!-- 가게 설명 -->
+          <p>
+            {{ store.description }}
           </p>
 
 
-          <!-- 배달 정보 -->
-          <div class="store-meta">
-
-            <span>
-              🕒 {{ store.deliveryTime }}
-            </span>
-
-            <span>
-              Delivery {{ store.deliveryFee }}
-            </span>
-
-          </div>
+          <!-- 가게 주소 -->
+          <p>
+            {{ store.address }}
+          </p>
 
         </div>
 
@@ -312,94 +277,101 @@
 
 <script setup>
 
-// 1. Vue Router 가져오기
-import { useRouter } from 'vue-router'
+// =========================
+// 1. Import
+// =========================
 
+import {
+  ref,
+  onMounted
+} from 'vue'
 
-// 2. Bottom Navigation 가져오기
+import {
+  useRouter
+} from 'vue-router'
+
 import BottomNav from '@/components/BottomNav.vue'
 
 
-// 3. Router 사용 준비
-const router = useRouter()
+// =========================
+// 2. Router
+// =========================
+
+const router =
+  useRouter()
 
 
 // =========================
-// 임시 Store 데이터
+// 3. Store 데이터
 // =========================
 
-// 아직 GET /api/stores를 만들기 전이므로
-// 프론트 화면 확인을 위해 임시 데이터를 사용함.
-//
-// 나중에는 이 배열을 지우고
-// 백엔드 DB에서 Store 목록을 fetch로 받아오게 됨.
-const stores = [
-
-  {
-    id: 1,
-    name: 'Yummy Burger',
-    image: '🍔',
-    rating: 4.8,
-    reviewCount: 100,
-    category: 'Burger · American · Fries',
-    deliveryTime: '20–30 min',
-    deliveryFee: '$0',
-    badge: 'Free delivery'
-  },
+// 처음에는 빈 배열
+const stores =
+  ref([])
 
 
-  {
-    id: 2,
-    name: 'Orange Pizza House',
-    image: '🍕',
-    rating: 4.7,
-    reviewCount: 85,
-    category: 'Pizza · Italian',
-    deliveryTime: '25–35 min',
-    deliveryFee: '$1.99',
-    badge: 'Popular'
-  },
+// =========================
+// 4. Store 목록 조회
+// =========================
+
+const loadStores = async () => {
+
+  try {
+
+    const response =
+      await fetch(
+        'http://localhost:8080/api/stores'
+      )
 
 
-  {
-    id: 3,
-    name: 'Tokyo Sushi',
-    image: '🍣',
-    rating: 4.9,
-    reviewCount: 210,
-    category: 'Sushi · Japanese',
-    deliveryTime: '30–40 min',
-    deliveryFee: '$2.49',
-    badge: ''
-  },
+    // 요청 실패
+    if (!response.ok) {
+
+      const message =
+        await response.text()
+
+      throw new Error(
+        message || 'Store 목록 조회 실패'
+      )
+    }
 
 
-  {
-    id: 4,
-    name: 'YAMI Noodles',
-    image: '🍜',
-    rating: 4.6,
-    reviewCount: 150,
-    category: 'Noodles · Asian',
-    deliveryTime: '15–25 min',
-    deliveryFee: '$0.99',
-    badge: ''
-  },
+    // 백엔드 JSON 받기
+    const data =
+      await response.json()
 
 
-  {
-    id: 5,
-    name: 'Fresh Salad Kitchen',
-    image: '🥗',
-    rating: 4.8,
-    reviewCount: 73,
-    category: 'Healthy · Salad',
-    deliveryTime: '20–30 min',
-    deliveryFee: '$0',
-    badge: 'New'
+    // 실제 DB Store 목록 저장
+    stores.value =
+      data
+
+
+    console.log(
+      'DB에서 받은 Store:',
+      stores.value
+    )
+
+
+  } catch (error) {
+
+    console.error(
+      'Store 목록 조회 실패:',
+      error
+    )
   }
+}
 
-]
+
+// =========================
+// 5. 페이지 처음 열릴 때
+// Store 목록 조회
+// =========================
+
+onMounted(() => {
+
+  loadStores()
+
+})
 
 
 // =========================
