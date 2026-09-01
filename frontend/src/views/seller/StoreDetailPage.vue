@@ -258,81 +258,82 @@
       </div>
 
 
-      <!-- =========================
-           Product List
-      ========================== -->
+<!-- =========================
+     Product List
+========================== -->
 
-      <div
-        v-for="product in products"
-        :key="product.id"
-        class="product-card"
+<div
+  v-for="product in products"
+  :key="product.id"
+  class="product-card"
+>
+
+  <!-- 상품 정보 -->
+  <div class="product-info">
+
+    <h3>
+      {{ product.name }}
+    </h3>
+
+    <p>
+      {{ product.description }}
+    </p>
+
+    <strong class="price">
+      ${{ product.price.toFixed(2) }}
+    </strong>
+
+
+    <!-- =========================
+         Seller 화면
+    ========================== -->
+    <div
+      v-if="isSellerOwner"
+      class="seller-actions"
+    >
+
+      <button @click="editProduct(product.id)">
+        Edit
+      </button>
+
+      <button
+        class="delete-button"
+        @click="deleteProduct(product.id)"
       >
+        Delete
+      </button>
 
-        <!-- 상품 정보 -->
-        <div class="product-info">
-
-          <h3>
-            {{ product.name }}
-          </h3>
+    </div>
 
 
-          <p>
-            {{ product.description }}
-          </p>
+    <!-- =========================
+         Customer 화면
+    ========================== -->
+    <button
+      v-else
+      class="cart-button"
+      @click="addToCart(product)"
+    >
+      Add to cart
+    </button>
+
+  </div>
 
 
-          <strong class="price">
-            ${{ product.price.toFixed(2) }}
-          </strong>
+  <!-- 상품 이미지 -->
+  <div class="product-image">
 
+    <img
+      v-if="product.imageUrl"
+      :src="`http://localhost:8080${product.imageUrl}`"
+      :alt="product.name"
+    />
 
-          <!-- =========================
-               Seller 화면
-          ========================== -->
-          <div
-            v-if="isSellerOwner"
-            class="seller-actions"
-          >
+  </div>
 
-            <button @click="editProduct(product.id)">
-              Edit
-            </button>
+</div>
 
-            <button
-              class="delete-button"
-              @click="deleteProduct(product.id)"
-            >
-              Delete
-            </button>
-
-          </div>
-
-
-          <!-- =========================
-               Customer 화면
-          ========================== -->
-          <button
-            v-else
-            class="cart-button"
-            @click="addToCart(product)"
-          >
-            Add to cart
-          </button>
-
-        </div>
-
-
-        <!-- 상품 이미지 -->
-        <div class="product-image">
-
-          {{ product.image }}
-
-        </div>
-
-      </div>
-
-    </section>
-
+</section>
 
     <!-- =========================
          INFO
@@ -686,76 +687,69 @@ const handleImageChange = (event) => {
 onMounted(() => {
 
   loadStore()
+  loadProducts()
 
 })
 
-
-
 // =========================
-// 10. 임시 Product 데이터
+// 10. Product 데이터
 // =========================
 
-// Product 백엔드는 아직 연결하지 않았으므로
-// 일단 기존 테스트 데이터 유지
-const products = ref([
+const products = ref([])
 
-  {
+// =========================
+// 11. Store 상품 목록 조회
+// =========================
 
-    id: 1,
+const loadProducts = async () => {
 
-    name:
-      'Cheese Burger',
+  try {
 
-    description:
-      'Beef patty, cheese, lettuce and special sauce',
-
-    price:
-      12.99,
-
-    image:
-      '🍔'
-
-  },
+    const token =
+      localStorage.getItem('token')
 
 
-  {
+    const response =
+      await fetch(
+        'http://localhost:8080/api/products/my-store',
+        {
+          method: 'GET',
 
-    id: 2,
-
-    name:
-      'Double Burger',
-
-    description:
-      'Two beef patties with double cheese',
-
-    price:
-      15.99,
-
-    image:
-      '🍔'
-
-  },
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      )
 
 
-  {
+    if (!response.ok) {
 
-    id: 3,
+      const message =
+        await response.text()
 
-    name:
-      'French Fries',
+      throw new Error(
+        message || '상품 조회 실패'
+      )
+    }
 
-    description:
-      'Crispy golden french fries',
 
-    price:
-      4.99,
+    const data =
+      await response.json()
 
-    image:
-      '🍟'
 
+    products.value =
+      data
+
+
+  } catch (error) {
+
+    console.error(
+      '상품 조회 실패:',
+      error
+    )
   }
-
-])
+}
 
 
 
