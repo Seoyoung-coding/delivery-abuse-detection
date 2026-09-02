@@ -418,41 +418,27 @@
 // 1. Vue 기능 import
 // =========================
 
-// ref
-// → 값이 변경되면 화면도 자동으로 변경됨
-//
-// onMounted
-// → StoreDetailPage가 처음 열렸을 때
-//   실행할 코드를 지정할 때 사용
 import {
   ref,
   onMounted
 } from 'vue'
 
 
-// useRoute
-// → 현재 URL의 parameter를 가져오기 위해 사용
-//
-// useRouter
-// → 뒤로가기 / 페이지 이동 등에 사용
 import {
   useRoute,
   useRouter
 } from 'vue-router'
 
 
-
 // =========================
 // 2. Router 사용 준비
 // =========================
 
-// 현재 URL 정보
-const route = useRoute()
+const route =
+  useRoute()
 
-
-// 페이지 이동 기능
-const router = useRouter()
-
+const router =
+  useRouter()
 
 
 // =========================
@@ -460,13 +446,15 @@ const router = useRouter()
 // =========================
 
 // 예:
-//
 // /stores/1
 //
-// 이라면:
+// router:
+// /stores/:id
 //
+// 따라서:
 // route.params.id
 // → "1"
+
 const storeId =
   route.params.id
 
@@ -477,102 +465,62 @@ console.log(
 )
 
 
-
 // =========================
 // 4. 현재 선택된 Tab
 // =========================
 
-// 기본으로 menu 탭 선택
 const activeTab =
   ref('menu')
-
 
 
 // =========================
 // 5. 찜 상태
 // =========================
 
-// false → 찜 안 함
-// true  → 찜 함
 const favorite =
   ref(false)
-
 
 
 // =========================
 // 6. Seller 본인 Store 여부
 // =========================
 
-// ⚠ 현재는 임시값
-//
-// true
-// → Seller 전용 버튼 표시
-//
-// false
-// → Customer용 버튼 표시
-//
-// 나중에 JWT + Seller + Store 관계를
-// 백엔드에서 확인해서 변경해야 함
+// 현재는 임시값
 const isSellerOwner =
   ref(true)
-
 
 
 // =========================
 // 7. Store 데이터
 // =========================
 
-// 처음에는 빈 값을 가지고 있다가
-//
-// GET /api/stores/{storeId}
-//
-// 요청이 성공하면
-// 실제 DB 데이터로 변경됨
-const store = ref({
+const store =
+  ref({
 
-  // Store ID
-  id: null,
+    id: null,
 
+    name: '',
 
-  // 가게 이름
-  name: '',
+    description: '',
 
+    address: '',
 
-  // 가게 설명
-  description: '',
+    imageUrl: null,
 
+    // 아직 임시값
+    rating: 4.8,
 
-  // 가게 주소
-  address: '',
+    reviewCount: 128,
 
+    category:
+      'Burger · American · Fries',
 
-  // Seller가 등록한 대표 이미지 URL
-  //
-  // 예:
-  //
-  // /uploads/stores/abc.jpg
-  imageUrl: null,
+    deliveryTime:
+      '20–30 min',
 
-
-  // =========================
-  // 아직 백엔드 연결 안 한 임시값
-  // =========================
-
-  rating: 4.8,
-
-  reviewCount: 128,
-
-  category:
-    'Burger · American · Fries',
-
-  deliveryTime:
-    '20–30 min',
-
-  deliveryFee:
-    '$0'
-
-})
-
+    deliveryFee:
+      '$0'
+  })
 
 
 // =========================
@@ -583,50 +531,29 @@ const loadStore = async () => {
 
   try {
 
-    // 현재 URL의 storeId를 이용해서
-    // 백엔드에 해당 Store 조회 요청
-    //
-    // 예:
-    //
-    // GET /api/stores/1
     const response =
       await fetch(
         `http://localhost:8080/api/stores/${storeId}`
       )
 
 
-    // 200번대가 아니면 실패 처리
     if (!response.ok) {
 
       throw new Error(
         '가게 정보를 불러오지 못했습니다.'
       )
-
     }
 
 
-    // 백엔드 JSON 응답을
-    // JavaScript 객체로 변환
     const data =
       await response.json()
 
 
-    // 기존 임시값은 유지하면서
-    // 백엔드에서 받은 값으로 덮어씀
-    //
-    // 백엔드에서 현재 오는 값:
-    //
-    // id
-    // name
-    // description
-    // address
-    // imageUrl
     store.value = {
 
       ...store.value,
 
       ...data
-
     }
 
 
@@ -642,9 +569,7 @@ const loadStore = async () => {
       'Store 조회 실패:',
       error
     )
-
   }
-
 }
 
 // =========================

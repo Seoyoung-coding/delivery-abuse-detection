@@ -162,6 +162,14 @@ const routes = [
   component: ProductRegisterPage
   },
 
+  // Home에서 Store 클릭했을 때
+// 해당 Store 상세 페이지
+  {
+  path: '/stores/:id',
+  name: 'StoreDetailPublic',
+  component: StoreDetailPage
+  },
+
   // ====================================================
   // Admin
   // ====================================================
