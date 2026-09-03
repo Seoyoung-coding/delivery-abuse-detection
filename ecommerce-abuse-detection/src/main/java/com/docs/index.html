@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>E-commerce Abuse Detection</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<main>
+
+    <!-- =========================
+         HERO
+    ========================== -->
+
+    <section class="hero">
+
+        <p class="small-title">
+            FEATURE SHOWCASE
+        </p>
+
+        <h1>
+            E-commerce<br>
+            Abuse Detection
+        </h1>
+
+        <p class="description">
+            Backend-focused e-commerce system for
+            refund abuse detection, seller operations,
+            returnless resolution, and admin workflows.
+        </p>
+
+        <div class="stack">
+
+            <span>Spring Boot</span>
+            <span>Vue.js</span>
+            <span>MySQL</span>
+            <span>Python</span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         SHOWCASE
+    ========================== -->
+
+    <section class="showcase">
+
+        <div class="showcase-header">
+
+            <div>
+                <p class="small-title">
+                    INTERACTIVE DEMO
+                </p>
+
+                <h2>
+                    Drag to explore
+                </h2>
+            </div>
+
+            <p class="drag-text">
+                ← DRAG TO EXPLORE →
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             CAROUSEL
+        ========================== -->
+
+        <div
+                class="carousel-stage"
+                id="carouselStage"
+        >
+
+            <!-- LEFT BUTTON -->
+
+            <button
+                    class="arrow arrow-left"
+                    id="prevButton"
+            >
+                ←
+            </button>
+
+
+            <!-- =========================
+                 CARD 01
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="0"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                E-COMMERCE
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                ACCOUNT
+                            </p>
+
+                            <h3>
+                                Authentication
+                            </h3>
+
+
+                            <div class="input-placeholder"></div>
+                            <div class="input-placeholder"></div>
+
+
+                            <div class="fake-button">
+                                SIGN IN
+                            </div>
+
+
+                            <div class="mock-message">
+
+                                <span class="status-dot"></span>
+
+                                JWT authentication
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>01</span>
+
+                    <h3>
+                        Authentication
+                    </h3>
+
+                    <p>
+                        JWT login and role-based access.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 02
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="1"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                SELLER
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                SELLER CENTER
+                            </p>
+
+                            <h3>
+                                Seller Management
+                            </h3>
+
+
+                            <div class="seller-card">
+
+                                <div class="store-image"></div>
+
+                                <div>
+
+                                    <strong>
+                                        Seller Request
+                                    </strong>
+
+                                    <small>
+                                        Pending approval
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="fake-button">
+                                APPLY AS SELLER
+                            </div>
+
+
+                            <div class="mini-row">
+
+                                <div></div>
+                                <div></div>
+                                <div></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>02</span>
+
+                    <h3>
+                        Seller Management
+                    </h3>
+
+                    <p>
+                        Application, approval and store creation.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 03
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="2"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                STORE
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                STORE MANAGEMENT
+                            </p>
+
+                            <h3>
+                                Products
+                            </h3>
+
+
+                            <div class="product-grid">
+
+                                <div class="product-item">
+
+                                    <div class="product-image"></div>
+
+                                    <span>
+                                        Product A
+                                    </span>
+
+                                    <strong>
+                                        $12.99
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="product-item">
+
+                                    <div class="product-image"></div>
+
+                                    <span>
+                                        Product B
+                                    </span>
+
+                                    <strong>
+                                        $8.49
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="fake-button">
+                                + ADD PRODUCT
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>03</span>
+
+                    <h3>
+                        Product Management
+                    </h3>
+
+                    <p>
+                        Seller product registration and store management.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 04
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="3"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                REFUND
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                ORDER #10293
+                            </p>
+
+                            <h3>
+                                Refund Request
+                            </h3>
+
+
+                            <div class="decision-card">
+
+                                <span>
+                                    Product Value
+                                </span>
+
+                                <strong>
+                                    $68.50
+                                </strong>
+
+                            </div>
+
+
+                            <div class="decision-card">
+
+                                <span>
+                                    Request Type
+                                </span>
+
+                                <strong>
+                                    Not Received
+                                </strong>
+
+                            </div>
+
+
+                            <div class="fake-button">
+                                REQUEST REFUND
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>04</span>
+
+                    <h3>
+                        Refund Decision
+                    </h3>
+
+                    <p>
+                        Refund request and decision workflow.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 05
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="4"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                RISK ENGINE
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                ABUSE DETECTION
+                            </p>
+
+                            <h3>
+                                Risk Analysis
+                            </h3>
+
+
+                            <div class="risk-score">
+
+                                <span>
+                                    RISK SCORE
+                                </span>
+
+                                <strong>
+                                    82
+                                </strong>
+
+                                <small>
+                                    HIGH RISK
+                                </small>
+
+                            </div>
+
+
+                            <div class="risk-line">
+
+                                <span>
+                                    Refund frequency
+                                </span>
+
+                                <strong>
+                                    High
+                                </strong>
+
+                            </div>
+
+
+                            <div class="risk-line">
+
+                                <span>
+                                    Claim history
+                                </span>
+
+                                <strong>
+                                    7
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>05</span>
+
+                    <h3>
+                        Abuse Detection
+                    </h3>
+
+                    <p>
+                        Behavioral risk analysis for refund abuse.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 06
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="5"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                RETURNLESS
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                DYNAMIC THRESHOLD
+                            </p>
+
+                            <h3>
+                                Returnless Resolution
+                            </h3>
+
+
+                            <div class="threshold">
+
+                                <small>
+                                    CURRENT THRESHOLD
+                                </small>
+
+                                <strong>
+                                    $61.40
+                                </strong>
+
+                            </div>
+
+
+                            <div class="threshold-change">
+
+                                <span>
+                                    Previous
+                                </span>
+
+                                <strong>
+                                    $75.00
+                                </strong>
+
+                            </div>
+
+
+                            <div class="fake-button">
+                                RECALCULATE
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>06</span>
+
+                    <h3>
+                        Dynamic Threshold
+                    </h3>
+
+                    <p>
+                        Data-driven returnless refund threshold.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 07
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="6"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                ADMIN
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                OPERATIONS
+                            </p>
+
+                            <h3>
+                                Admin Dashboard
+                            </h3>
+
+
+                            <div class="dashboard-grid">
+
+                                <div>
+                                    <small>
+                                        REPORTS
+                                    </small>
+
+                                    <strong>
+                                        24
+                                    </strong>
+                                </div>
+
+
+                                <div>
+                                    <small>
+                                        SELLERS
+                                    </small>
+
+                                    <strong>
+                                        12
+                                    </strong>
+                                </div>
+
+
+                                <div>
+                                    <small>
+                                        HIGH RISK
+                                    </small>
+
+                                    <strong>
+                                        7
+                                    </strong>
+                                </div>
+
+
+                                <div>
+                                    <small>
+                                        PENDING
+                                    </small>
+
+                                    <strong>
+                                        5
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>07</span>
+
+                    <h3>
+                        Admin Dashboard
+                    </h3>
+
+                    <p>
+                        Reports, sellers and abuse monitoring.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =========================
+                 CARD 08
+            ========================== -->
+
+            <article
+                    class="demo-card"
+                    data-index="7"
+            >
+
+                <div class="phone">
+
+                    <div class="dynamic-island"></div>
+
+                    <div class="phone-screen">
+
+                        <div class="mock-header">
+
+                            <span>
+                                SUPPORT
+                            </span>
+
+                            <div class="avatar"></div>
+
+                        </div>
+
+
+                        <div class="mock-body">
+
+                            <p class="screen-label">
+                                SELLER ↔ ADMIN
+                            </p>
+
+                            <h3>
+                                Chat
+                            </h3>
+
+
+                            <div class="chat left">
+                                Seller application approved?
+                            </div>
+
+
+                            <div class="chat right">
+                                Yes. Your store is now active.
+                            </div>
+
+
+                            <div class="chat left">
+                                Thank you!
+                            </div>
+
+
+                            <div class="chat-input">
+                                Type a message...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-info">
+
+                    <span>08</span>
+
+                    <h3>
+                        Seller ↔ Admin Chat
+                    </h3>
+
+                    <p>
+                        Persistent communication between seller and admin.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- RIGHT BUTTON -->
+
+            <button
+                    class="arrow arrow-right"
+                    id="nextButton"
+            >
+                →
+            </button>
+
+        </div>
+
+
+        <!-- =========================
+             DOTS
+        ========================== -->
+
+        <div
+                class="dots"
+                id="dots"
+        ></div>
+
+
+        <div class="feature-counter">
+
+            <span id="currentNumber">
+                01
+            </span>
+
+            <span>
+                /
+            </span>
+
+            <span>
+                08
+            </span>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
