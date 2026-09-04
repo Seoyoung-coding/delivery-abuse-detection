@@ -2,6 +2,12 @@
 
   <div class="page">
 
+    <button
+      class="back-button"
+      @click="goBack"
+    >
+      ← Back
+    </button>
 
     <!-- =========================
          Header
@@ -140,11 +146,26 @@
 
 import {
   computed,
-  ref
+  ref,
+  onMounted
 } from 'vue'
+
+import {
+  useRouter
+} from 'vue-router'
 
 import ChatWindow from '@/components/chat/ChatWindow.vue'
 
+
+const router =
+  useRouter()
+
+
+const goBack = () => {
+
+  router.back()
+
+}
 interface ChatMessage {
   id: number | string
   text: string
@@ -173,164 +194,71 @@ interface SellerConversation {
 }
 
 
+// =====================================================
+// Backend 응답 타입
+// =====================================================
+
+interface AdminRoomResponse {
+  roomId: number
+  sellerId: number
+  sellerEmail: string
+  createdAt: string
+}
+
+interface AdminMessageResponse {
+  id: number
+  sender: 'SELLER' | 'ADMIN'
+  content: string
+  createdAt: string
+}
+
+
+// =====================================================
+// 실제 Seller 채팅 데이터
+// =====================================================
+
 const sellers =
-  ref<SellerConversation[]>([
-
-    {
-      id: 1,
-
-      name: 'Mina Kim',
-
-      storeName: 'Seoul Kitchen',
-
-      avatar: 'M',
-
-      online: true,
-
-      lastMessage:
-        'I have a question about my store.',
-
-      lastTime: '10:16 AM',
-
-      unread: 2
-    },
-
-    {
-      id: 2,
-
-      name: 'Daniel Lee',
-
-      storeName: 'Tokyo Bento',
-
-      avatar: 'D',
-
-      online: true,
-
-      lastMessage:
-        'Thank you for your help!',
-
-      lastTime: '9:42 AM',
-
-      unread: 0
-    },
-
-    {
-      id: 3,
-
-      name: 'Sarah Park',
-
-      storeName: 'K Food House',
-
-      avatar: 'S',
-
-      online: false,
-
-      lastMessage:
-        'Can I update my store address?',
-
-      lastTime: 'Yesterday',
-
-      unread: 1
-    }
-
-  ])
+  ref<SellerConversation[]>([])
 
 
 const chatMessages =
-  ref<Record<number, ChatMessage[]>>({
-
-    1: [
-
-      {
-        id: 1,
-
-        text:
-          'Hello! Welcome to YamiYumi Seller Support. How can we help you today?',
-
-        time: '10:14 AM',
-
-        isMine: true
-      },
-
-      {
-        id: 2,
-
-        text:
-          'Hi! I have a question about updating my store information.',
-
-        time: '10:16 AM',
-
-        isMine: false
-      }
-
-    ],
+  ref<Record<number, ChatMessage[]>>({})
 
 
-    2: [
-
-      {
-        id: 3,
-
-        text:
-          'Your menu update has been approved.',
-
-        time: '9:40 AM',
-
-        isMine: true
-      },
-
-      {
-        id: 4,
-
-        text:
-          'Thank you for your help!',
-
-        time: '9:42 AM',
-
-        isMine: false
-      }
-
-    ],
-
-
-    3: [
-
-      {
-        id: 5,
-
-        text:
-          'Can I update my store address?',
-
-        time: 'Yesterday',
-
-        isMine: false
-      }
-
-    ]
-
-  })
-
-
+// 아직 DB 데이터를 불러오기 전에는 선택된 방 없음
 const selectedSellerId =
-  ref<number>(1)
+  ref<number | null>(null)
 
+
+// =====================================================
+// 현재 선택된 Seller
+// =====================================================
 
 const selectedSeller =
   computed(() => {
 
+    if (selectedSellerId.value === null) {
+      return undefined
+    }
+
     return sellers.value.find(
-
       seller =>
-        seller.id ===
-        selectedSellerId.value
-
+        seller.id === selectedSellerId.value
     )
 
   })
 
 
+// =====================================================
+// 현재 선택된 Seller의 메시지
+// =====================================================
+
 const selectedMessages =
   computed(() => {
+
+    if (selectedSellerId.value === null) {
+      return []
+    }
 
     return (
       chatMessages.value[
@@ -341,11 +269,15 @@ const selectedMessages =
   })
 
 
+// =====================================================
+// 읽지 않은 메시지 수
+// 현재는 readAt 연결 전이라 기본적으로 0
+// =====================================================
+
 const unreadCount =
   computed(() => {
 
     return sellers.value.reduce(
-
       (
         total,
         seller
@@ -354,12 +286,238 @@ const unreadCount =
         return total + seller.unread
 
       },
-
       0
     )
 
   })
 
+
+// =====================================================
+// 날짜 → 화면용 시간
+// =====================================================
+
+const formatTime = (
+  createdAt: string
+) => {
+
+  if (!createdAt) {
+    return ''
+  }
+
+  return new Date(
+    createdAt
+  ).toLocaleTimeString(
+    [],
+    {
+      hour: '2-digit',
+      minute: '2-digit'
+    }
+  )
+
+}
+
+
+// =====================================================
+// Admin 페이지 처음 열 때
+// 실제 DB의 Seller 채팅방 + 메시지 조회
+// =====================================================
+
+const loadAdminChats =
+  async () => {
+
+    try {
+
+      // -----------------------------------------------
+      // 1. 전체 Seller 채팅방 조회
+      // -----------------------------------------------
+
+      const roomResponse =
+        await fetch(
+          'http://localhost:8080/api/chat/admin/rooms'
+        )
+
+
+      if (!roomResponse.ok) {
+
+        throw new Error(
+          `채팅방 조회 실패: ${roomResponse.status}`
+        )
+
+      }
+
+
+      const rooms:
+        AdminRoomResponse[] =
+          await roomResponse.json()
+
+
+      const loadedSellers:
+        SellerConversation[] = []
+
+      const loadedMessages:
+        Record<number, ChatMessage[]> = {}
+
+
+      // -----------------------------------------------
+      // 2. 각각의 채팅방 메시지 조회
+      // -----------------------------------------------
+
+      for (const room of rooms) {
+
+        const messageResponse =
+          await fetch(
+            `http://localhost:8080/api/chat/admin/rooms/${room.roomId}/messages`
+          )
+
+
+        if (!messageResponse.ok) {
+
+          throw new Error(
+            `메시지 조회 실패: ${messageResponse.status}`
+          )
+
+        }
+
+
+        const messageData:
+          AdminMessageResponse[] =
+            await messageResponse.json()
+
+
+        // Backend 메시지를
+        // 기존 ChatMessage UI 형식으로 변경
+        const mappedMessages:
+          ChatMessage[] =
+            messageData.map(
+              message => ({
+
+                id:
+                  message.id,
+
+                text:
+                  message.content,
+
+                time:
+                  formatTime(
+                    message.createdAt
+                  ),
+
+                // Admin 화면에서는
+                // ADMIN 메시지가 내 메시지
+                isMine:
+                  message.sender === 'ADMIN'
+
+              })
+            )
+
+
+        // roomId별 메시지 저장
+        loadedMessages[
+          room.roomId
+        ] = mappedMessages
+
+
+        // 마지막 메시지
+        const lastMessage =
+          mappedMessages.length > 0
+            ? mappedMessages[
+                mappedMessages.length - 1
+              ]
+            : undefined
+
+
+        // ---------------------------------------------
+        // Backend Room
+        // →
+        // 기존 SellerConversation UI 형태로 변경
+        // ---------------------------------------------
+
+        loadedSellers.push({
+
+          // 기존 UI의 id를 roomId로 사용
+          // 그래야 메시지 API와 연결하기 쉬움
+          id:
+            room.roomId,
+
+          // 현재 Backend에는 seller name이 없으므로
+          // 우선 이메일 표시
+          name:
+            room.sellerEmail,
+
+          storeName:
+            `Seller ID: ${room.sellerId}`,
+
+          avatar:
+            room.sellerEmail
+              ? room.sellerEmail
+                  .charAt(0)
+                  .toUpperCase()
+              : '?',
+
+          // online 기능은 아직 없으므로 false
+          online:
+            false,
+
+          lastMessage:
+            lastMessage
+              ? lastMessage.text
+              : 'No messages yet',
+
+          lastTime:
+            lastMessage
+              ? lastMessage.time
+              : '',
+
+          // readAt 기능 연결 전
+          unread:
+            0
+
+        })
+
+      }
+
+
+      // -----------------------------------------------
+      // 3. 화면 데이터 교체
+      // -----------------------------------------------
+
+      sellers.value =
+        loadedSellers
+
+      chatMessages.value =
+        loadedMessages
+
+
+      // -----------------------------------------------
+      // 4. 첫 번째 채팅방 자동 선택
+      // -----------------------------------------------
+
+      const firstSeller =
+        sellers.value[0]
+
+      if (firstSeller) {
+
+        selectedSellerId.value =
+          firstSeller.id
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        'Admin 채팅 조회 실패:',
+        error
+      )
+
+    }
+
+  }
+
+
+// =====================================================
+// Seller 채팅방 선택
+// =====================================================
 
 const selectSeller = (
   sellerId: number
@@ -371,10 +529,8 @@ const selectSeller = (
 
   const seller =
     sellers.value.find(
-
       item =>
         item.id === sellerId
-
     )
 
 
@@ -387,67 +543,145 @@ const selectSeller = (
 }
 
 
-const sendMessage = (
-  text: string
-) => {
+// =====================================================
+// Admin 메시지 실제 DB 저장
+// =====================================================
 
-  const sellerId =
-    selectedSellerId.value
+const sendMessage =
+  async (
+    text: string
+  ) => {
+
+    const sellerId =
+      selectedSellerId.value
 
 
-  if (!chatMessages.value[sellerId]) {
+    if (sellerId === null) {
+      return
+    }
 
-    chatMessages.value[sellerId] = []
+
+    if (!text.trim()) {
+      return
+    }
+
+
+    try {
+
+      // -----------------------------------------------
+      // Backend에 Admin 메시지 저장
+      // -----------------------------------------------
+
+      const response =
+        await fetch(
+          `http://localhost:8080/api/chat/admin/rooms/${sellerId}/messages`,
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+                content: text
+              })
+          }
+        )
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `메시지 전송 실패: ${response.status}`
+        )
+
+      }
+
+
+      const savedMessage:
+        AdminMessageResponse =
+          await response.json()
+
+
+      // -----------------------------------------------
+      // 현재 화면에도 바로 추가
+      // -----------------------------------------------
+
+      if (!chatMessages.value[sellerId]) {
+
+        chatMessages.value[sellerId] = []
+
+      }
+
+
+      chatMessages.value[
+        sellerId
+      ].push({
+
+        id:
+          savedMessage.id,
+
+        text:
+          savedMessage.content,
+
+        time:
+          formatTime(
+            savedMessage.createdAt
+          ),
+
+        isMine:
+          true
+
+      })
+
+
+      // -----------------------------------------------
+      // 왼쪽 채팅 목록의 마지막 메시지도 갱신
+      // -----------------------------------------------
+
+      const seller =
+        sellers.value.find(
+          item =>
+            item.id === sellerId
+        )
+
+
+      if (seller) {
+
+        seller.lastMessage =
+          savedMessage.content
+
+        seller.lastTime =
+          formatTime(
+            savedMessage.createdAt
+          )
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        'Admin 메시지 전송 실패:',
+        error
+      )
+
+    }
 
   }
 
 
-  /*
-   * Admin이 보내는 메시지
-   *
-   * 나중에 여기에서
-   * REST API 또는 WebSocket 연결
-   */
+// =====================================================
+// 페이지가 처음 열릴 때 DB 데이터 불러오기
+// =====================================================
 
+onMounted(() => {
 
-  chatMessages.value[sellerId].push({
+  loadAdminChats()
 
-    id: Date.now(),
-
-    text,
-
-    time:
-      new Date().toLocaleTimeString(
-        [],
-        {
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      ),
-
-    isMine: true
-
-  })
-
-
-  const seller =
-    sellers.value.find(
-
-      item =>
-        item.id === sellerId
-
-    )
-
-
-  if (seller) {
-
-    seller.lastMessage = text
-
-    seller.lastTime = 'Now'
-
-  }
-
-}
+})
 
 </script>
 
@@ -482,6 +716,34 @@ const sendMessage = (
   font-family: 'Montserrat', sans-serif;
 
   color: #3A251E;
+
+}
+
+.back-button {
+
+  margin-bottom: 16px;
+
+  padding: 8px 14px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background-color: #fff4eb;
+
+  color: #ff6b00;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+}
+
+.back-button:hover {
+
+  background-color: #ffe6d5;
 
 }
 

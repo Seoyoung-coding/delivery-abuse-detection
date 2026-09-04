@@ -33,6 +33,9 @@ public class ChatMessage {
 
     private LocalDateTime readAt;
 
+    public void markAsRead() {
+        this.readAt = LocalDateTime.now();
+    }
     public ChatMessage(
             ChatRoom chatRoom,
             MessageSender sender,

@@ -134,8 +134,9 @@ public class ChatService {
                 );
     }
 
-    // admin
-
+    // =====================================================
+    // Admin : 전체 Seller 채팅방 조회
+    // =====================================================
     @Transactional(readOnly = true)
     public List<ChatRoom> getAdminRooms() {
 
@@ -143,4 +144,77 @@ public class ChatService {
                 .findAllByOrderByCreatedAtDesc();
     }
 
+
+    // =====================================================
+    // Admin : 특정 채팅방의 메시지 전체 조회
+    // =====================================================
+    @Transactional(readOnly = true)
+    public List<ChatMessage> getAdminMessages(
+            Long roomId
+    ) {
+
+        // 1. Admin이 선택한 채팅방 찾기
+        ChatRoom chatRoom =
+                chatRoomRepository
+                        .findById(roomId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "채팅방을 찾을 수 없습니다."
+                                )
+                        );
+
+
+        // 2. 해당 채팅방의 메시지를 시간순으로 조회
+        return chatMessageRepository
+                .findByChatRoomOrderByCreatedAtAsc(
+                        chatRoom
+                );
+    }
+
+
+    // =====================================================
+    // Admin : 특정 Seller 채팅방에 답장
+    // =====================================================
+    @Transactional
+    public ChatMessage sendAdminMessage(
+            Long roomId,
+            String content
+    ) {
+
+        // 1. 빈 메시지 방지
+        if (
+                content == null ||
+                        content.isBlank()
+        ) {
+            throw new RuntimeException(
+                    "메시지를 입력해주세요."
+            );
+        }
+
+
+        // 2. Admin이 답장할 채팅방 찾기
+        ChatRoom chatRoom =
+                chatRoomRepository
+                        .findById(roomId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "채팅방을 찾을 수 없습니다."
+                                )
+                        );
+
+
+        // 3. ADMIN이 보낸 메시지 생성
+        ChatMessage message =
+                new ChatMessage(
+                        chatRoom,
+                        MessageSender.ADMIN,
+                        content
+                );
+
+
+        // 4. DB 저장
+        return chatMessageRepository.save(
+                message
+        );
+    }
 }

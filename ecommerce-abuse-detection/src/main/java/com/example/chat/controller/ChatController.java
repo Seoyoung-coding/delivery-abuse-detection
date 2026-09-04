@@ -163,4 +163,53 @@ public class ChatController {
                 rooms
         );
     }
+
+    // =====================================================
+// Admin : 특정 Seller 채팅방 메시지 전체 조회
+// GET /api/chat/admin/rooms/{roomId}/messages
+// =====================================================
+    @GetMapping("/admin/rooms/{roomId}/messages")
+    public ResponseEntity<List<Map<String, Object>>> getAdminMessages(
+            @PathVariable Long roomId
+    ) {
+
+        List<Map<String, Object>> messages =
+                chatService
+                        .getAdminMessages(roomId)
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+
+        return ResponseEntity.ok(
+                messages
+        );
+    }
+
+
+    // =====================================================
+    // Admin : 특정 Seller 채팅방에 답장
+    // POST /api/chat/admin/rooms/{roomId}/messages
+    // =====================================================
+    @PostMapping("/admin/rooms/{roomId}/messages")
+    public ResponseEntity<Map<String, Object>> sendAdminMessage(
+
+            @PathVariable Long roomId,
+
+            @RequestBody
+            Map<String, String> request
+    ) {
+
+        String content =
+                request.get("content");
+
+        ChatMessage message =
+                chatService.sendAdminMessage(
+                        roomId,
+                        content
+                );
+
+        return ResponseEntity.ok(
+                toResponse(message)
+        );
+    }
 }

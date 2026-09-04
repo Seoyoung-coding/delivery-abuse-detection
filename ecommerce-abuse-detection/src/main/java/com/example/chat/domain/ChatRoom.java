@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-public class ChatRoom {
+public class ChatRoom { // "이 Seller가 Admin과 대화하는 방
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +25,10 @@ public class ChatRoom {
     private Seller seller;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
+    public void updateTimestamp() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public ChatRoom(Seller seller) {
         this.seller = seller;
