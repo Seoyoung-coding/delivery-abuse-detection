@@ -11,4 +11,10 @@ public interface ProductRepository
 
     // 특정 Store에 등록된 모든 상품 조회
     List<Product> findByStore(Store store);
+
+
+    // 특정 Store에 등록된 상품 개수
+    long countByStore(Store store);
+
+    
 }

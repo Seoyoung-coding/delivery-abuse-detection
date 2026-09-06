@@ -11,6 +11,7 @@ import com.example.seller.domain.Seller;
 import com.example.seller.repository.SellerRepository;
 import com.example.store.domain.Store;
 import com.example.store.repository.StoreRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -223,6 +224,34 @@ public class ProductService {
 
         // 7. 해당 Store의 Product들을 조회하고
         // ProductResponse로 변환해서 반환
+        return productRepository
+                .findByStore(store)
+                .stream()
+                .map(ProductResponse::new)
+                .toList();
+    }
+
+    // =========================
+    // Public : 특정 Store 상품 목록 조회
+    // Customer / 다른 Seller도 조회 가능
+    // =========================
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getStoreProducts(
+            Long storeId
+    ) {
+
+        // 1. Store 찾기
+        Store store =
+                storeRepository
+                        .findById(storeId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Store를 찾을 수 없습니다."
+                                )
+                        );
+
+
+        // 2. 해당 Store의 Product 조회
         return productRepository
                 .findByStore(store)
                 .stream()

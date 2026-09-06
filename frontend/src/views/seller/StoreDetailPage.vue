@@ -442,31 +442,45 @@ const router =
 
 
 // =========================
-// 3. URL에서 Store ID 가져오기
+// 3. 뒤로가기
 // =========================
 
-// 예:
-// /stores/1
+const goBack = () => {
+
+  router.back()
+
+}
+
+
+// =========================
+// 4. 현재 Store ID
+// =========================
 //
-// router:
-// /stores/:id
+// /stores/3
+// → route.params.id = "3"
 //
-// 따라서:
-// route.params.id
-// → "1"
+// /seller/store
+// → route.params.id 없음
+// → 처음에는 null
+// → loadStore()에서 Seller 본인의 Store ID를 가져옴
+//
 
 const storeId =
-  route.params.id
+  ref(
+    route.params.id
+      ? Number(route.params.id)
+      : null
+  )
 
 
 console.log(
-  '현재 Store ID:',
-  storeId
+  'URL Store ID:',
+  storeId.value
 )
 
 
 // =========================
-// 4. 현재 선택된 Tab
+// 5. 현재 선택된 Tab
 // =========================
 
 const activeTab =
@@ -474,24 +488,89 @@ const activeTab =
 
 
 // =========================
-// 5. 찜 상태
+// 6. 찜 상태
 // =========================
 
 const favorite =
   ref(false)
 
 
-// =========================
-// 6. Seller 본인 Store 여부
-// =========================
-
-// 현재는 임시값
 const isSellerOwner =
-  ref(true)
+  ref(false)
 
+  // =========================
+  // 현재 로그인 사용자가
+  // 이 Store의 주인 Seller인지 확인
+  // =========================
+const checkStoreOwner = async () => {
+
+  if (storeId.value === null) {
+    return
+  }
+
+
+  const token =
+    localStorage.getItem('token')
+
+
+  if (!token) {
+
+    isSellerOwner.value =
+      false
+
+    return
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `http://localhost:8080/api/stores/${storeId.value}/owner-check`,
+        {
+          method: 'GET',
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      )
+
+
+    if (!response.ok) {
+
+      isSellerOwner.value =
+        false
+
+      return
+    }
+
+
+    isSellerOwner.value =
+      await response.json()
+
+
+    console.log(
+      'Store Owner:',
+      isSellerOwner.value
+    )
+
+
+  } catch (error) {
+
+    console.error(
+      'Store 소유자 확인 실패:',
+      error
+    )
+
+    isSellerOwner.value =
+      false
+  }
+}
 
 // =========================
-// 7. Store 데이터
+// 8. Store 데이터
 // =========================
 
 const store =
@@ -507,7 +586,7 @@ const store =
 
     imageUrl: null,
 
-    // 아직 임시값
+    // 아래는 아직 임시 UI 데이터
     rating: 4.8,
 
     reviewCount: 128,
@@ -524,209 +603,287 @@ const store =
 
 
 // =========================
-// 8. Store 상세정보 조회
+// 9. Product 데이터
 // =========================
 
-const loadStore = async () => {
+const products =
+  ref([])
 
-  try {
 
-    const response =
-      await fetch(
-        `http://localhost:8080/api/stores/${storeId}`
+// =========================
+// 10. Store 상세정보 조회
+// =========================
+
+const loadStore =
+  async () => {
+
+    try {
+
+      let response
+
+
+      // ===============================================
+      // A. Homepage 등에서
+      // /stores/:id 로 들어온 경우
+      // ===============================================
+
+      if (storeId.value !== null) {
+
+        response =
+          await fetch(
+            `http://localhost:8080/api/stores/${storeId.value}`
+          )
+
+      }
+
+
+      // ===============================================
+      // B. Settings -> My Store에서
+      // /seller/store 로 들어온 경우
+      // ===============================================
+
+      else {
+
+        const token =
+          localStorage.getItem('token')
+
+
+        response =
+          await fetch(
+            'http://localhost:8080/api/stores/my-store',
+            {
+              method: 'GET',
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          )
+
+      }
+
+
+      if (!response.ok) {
+
+        const message =
+          await response.text()
+
+        throw new Error(
+          message ||
+          '가게 정보를 불러오지 못했습니다.'
+        )
+
+      }
+
+
+      const data =
+        await response.json()
+
+
+      // ===============================================
+      // Store 데이터 저장
+      // ===============================================
+
+      store.value = {
+
+        ...store.value,
+
+        ...data
+
+      }
+
+
+      // ===============================================
+      // 중요:
+      // /seller/store로 들어왔다면
+      // 여기에서 실제 Store ID 확보
+      // ===============================================
+
+      storeId.value =
+        Number(data.id)
+
+
+      console.log(
+        '실제 Store:',
+        store.value
+      )
+
+      console.log(
+        '확정된 Store ID:',
+        storeId.value
       )
 
 
-    if (!response.ok) {
+    } catch (error) {
 
-      throw new Error(
-        '가게 정보를 불러오지 못했습니다.'
+      console.error(
+        'Store 조회 실패:',
+        error
       )
+
     }
 
-
-    const data =
-      await response.json()
-
-
-    store.value = {
-
-      ...store.value,
-
-      ...data
-    }
-
-
-    console.log(
-      '가져온 Store:',
-      store.value
-    )
-
-
-  } catch (error) {
-
-    console.error(
-      'Store 조회 실패:',
-      error
-    )
-  }
-}
-
-// =========================
-// Store 대표 이미지 선택
-// =========================
-
-// Seller가 선택한 실제 이미지 파일을 저장
-const selectedImage = ref(null)
-
-
-// input에서 사진을 선택했을 때 실행
-const handleImageChange = (event) => {
-
-  // 사용자가 선택한 첫 번째 파일
-  const file = event.target.files[0]
-
-
-  // 아무 파일도 선택하지 않았다면 종료
-  if (!file) {
-    return
   }
 
-
-  // 선택한 파일 저장
-  selectedImage.value = file
-
-
-  // 개발 중 확인용
-  console.log(
-    '선택한 이미지:',
-    selectedImage.value
-  )
-}
-
-
-// =========================
-// 9. 페이지 처음 열릴 때 Store 조회
-// =========================
-
-onMounted(() => {
-
-  loadStore()
-  loadProducts()
-
-})
-
-// =========================
-// 10. Product 데이터
-// =========================
-
-const products = ref([])
 
 // =========================
 // 11. Store 상품 목록 조회
 // =========================
 
-const loadProducts = async () => {
+const loadProducts =
+  async () => {
 
-  try {
+    // Store ID를 아직 모르면 조회하면 안 됨
+    if (storeId.value === null) {
 
-    const token =
-      localStorage.getItem('token')
-
-
-    const response =
-      await fetch(
-        'http://localhost:8080/api/products/my-store',
-        {
-          method: 'GET',
-
-          headers: {
-            Authorization:
-              `Bearer ${token}`
-          }
-        }
+      console.error(
+        'Store ID가 없어서 상품을 조회할 수 없습니다.'
       )
 
+      return
 
-    if (!response.ok) {
-
-      const message =
-        await response.text()
-
-      throw new Error(
-        message || '상품 조회 실패'
-      )
     }
 
 
-    const data =
-      await response.json()
+    try {
+
+      const response =
+        await fetch(
+          `http://localhost:8080/api/products/store/${storeId.value}`,
+          {
+            method: 'GET'
+          }
+        )
 
 
-    products.value =
-      data
+      if (!response.ok) {
+
+        const message =
+          await response.text()
+
+        throw new Error(
+          message ||
+          '상품 조회 실패'
+        )
+
+      }
 
 
-  } catch (error) {
+      const data =
+        await response.json()
 
-    console.error(
-      '상품 조회 실패:',
-      error
-    )
+
+      products.value =
+        data
+
+
+      console.log(
+        'Store Products:',
+        products.value
+      )
+
+
+    } catch (error) {
+
+      console.error(
+        '상품 조회 실패:',
+        error
+      )
+
+    }
+
   }
+
+
+// =========================
+// 12. 페이지 처음 열릴 때
+// =========================
+//
+// 반드시 Store를 먼저 조회한다.
+//
+// /seller/store에서는 여기서
+// 실제 storeId를 알아내야 하기 때문.
+//
+// Store ID가 정해진 다음
+// Product를 조회한다.
+//
+
+onMounted(async () => {
+
+  await loadStore()
+
+  await loadProducts()
+
+  await checkStoreOwner()
+
+})
+
+
+// =========================
+// 13. Store 대표 이미지 선택
+// =========================
+
+const selectedImage =
+  ref(null)
+
+
+const handleImageChange = (
+  event
+) => {
+
+  const file =
+    event.target.files[0]
+
+
+  if (!file) {
+
+    return
+
+  }
+
+
+  selectedImage.value =
+    file
+
+
+  console.log(
+    '선택한 이미지:',
+    selectedImage.value
+  )
+
 }
 
 
-
 // =========================
-// 11. 뒤로가기
-// =========================
-
-const goBack = () => {
-
-  router.back()
-
-}
-
-
-
-
-// // =========================
-// // 12. 찜 버튼
-// // =========================
-
-// const toggleFavorite = () => {
-
-//   favorite.value =
-//     !favorite.value
-
-// }
-
-// =========================
-// 12. Seller Chat
+// 14. Seller Chat
 // =========================
 
 const goToChat = () => {
 
-  router.push('/seller/chat')
+  router.push(
+    '/seller/chat'
+  )
 
 }
 
 
 // =========================
-// 13. 상품 등록
+// 15. 상품 등록
 // =========================
 
 const addProduct = () => {
+
   router.push({
-    name: 'product-register'
+    name:
+      'product-register'
   })
+
 }
 
 
-
 // =========================
-// 14. 상품 수정
+// 16. 상품 수정
 // =========================
 
 const editProduct = (
@@ -740,9 +897,8 @@ const editProduct = (
 }
 
 
-
 // =========================
-// 15. 상품 삭제
+// 17. 상품 삭제
 // =========================
 
 const deleteProduct = (
@@ -756,9 +912,8 @@ const deleteProduct = (
 }
 
 
-
 // =========================
-// 16. 장바구니 추가
+// 18. 장바구니 추가
 // =========================
 
 const addToCart = (
@@ -771,91 +926,98 @@ const addToCart = (
 
 }
 
+
 // =========================
-// Store 대표 이미지 업로드
+// 19. Store 대표 이미지 업로드
 // =========================
 
-const uploadImage = async () => {
+const uploadImage =
+  async () => {
 
-  // 사진을 선택하지 않았으면 중단
-  if (!selectedImage.value) {
+    if (!selectedImage.value) {
 
-    alert('이미지를 먼저 선택해주세요.')
-
-    return
-  }
-
-
-  // 로그인할 때 저장한 JWT
-  const token =
-    localStorage.getItem('token')
-
-
-  // 파일 전송용 FormData 생성
-  const formData =
-    new FormData()
-
-
-  // 백엔드의 @RequestParam("image")와 이름을 맞춤
-  formData.append(
-    'image',
-    selectedImage.value
-  )
-
-
-  try {
-
-    // 우리가 만든 이미지 업로드 API 호출
-    const response =
-      await fetch(
-        'http://localhost:8080/api/stores/image',
-        {
-          method: 'PATCH',
-
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-
-          body: formData
-        }
+      alert(
+        '이미지를 먼저 선택해주세요.'
       )
 
+      return
 
-    if (!response.ok) {
-
-      throw new Error(
-        '이미지 업로드에 실패했습니다.'
-      )
     }
 
 
-    // 백엔드에서 반환한 imageUrl
-    const imageUrl =
-      await response.text()
+    const token =
+      localStorage.getItem(
+        'token'
+      )
 
 
-    // 업로드 직후 화면 이미지도 바로 변경
-    store.value.imageUrl =
-      imageUrl
+    const formData =
+      new FormData()
 
 
-    alert(
-      '대표 이미지가 변경되었습니다.'
+    formData.append(
+      'image',
+      selectedImage.value
     )
 
 
-  } catch (error) {
+    try {
 
-    console.error(
-      '이미지 업로드 실패:',
-      error
-    )
+      const response =
+        await fetch(
+          'http://localhost:8080/api/stores/image',
+          {
+            method:
+              'PATCH',
 
-    alert(
-      '이미지 업로드에 실패했습니다.'
-    )
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            },
+
+            body:
+              formData
+          }
+        )
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          '이미지 업로드에 실패했습니다.'
+        )
+
+      }
+
+
+      const imageUrl =
+        await response.text()
+
+
+      store.value.imageUrl =
+        imageUrl
+
+
+      alert(
+        '대표 이미지가 변경되었습니다.'
+      )
+
+
+    } catch (error) {
+
+      console.error(
+        '이미지 업로드 실패:',
+        error
+      )
+
+
+      alert(
+        '이미지 업로드에 실패했습니다.'
+      )
+
+    }
+
   }
-}
 
 </script>
 

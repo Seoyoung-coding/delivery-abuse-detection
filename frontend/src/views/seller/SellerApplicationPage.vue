@@ -892,9 +892,58 @@ const goToProfile = () => {
 // 11. My Store 이동
 // =========================
 
-const goToStore = () => {
+const goToStore = async () => {
 
-  router.push('/seller/store')
+  try {
+
+    const token =
+      localStorage.getItem('token')
+
+
+    const response =
+      await fetch(
+        'http://localhost:8080/api/stores/my-store',
+        {
+          method: 'GET',
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      )
+
+
+    if (!response.ok) {
+
+      const message =
+        await response.text()
+
+      throw new Error(
+        message || '내 Store 조회 실패'
+      )
+
+    }
+
+
+    const store =
+      await response.json()
+
+
+    // 실제 Store ID가 들어간 동일한 상세 페이지로 이동
+    router.push(
+      `/stores/${store.id}`
+    )
+
+
+  } catch (error) {
+
+    console.error(
+      'My Store 이동 실패:',
+      error
+    )
+
+  }
 
 }
 

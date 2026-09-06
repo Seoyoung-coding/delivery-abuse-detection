@@ -221,6 +221,53 @@ public class StoreService {
         }
     }
 
+
+    // =========================
+    // Seller : 본인의 Store 조회
+    // =========================
+    public StoreResponse getMyStore(
+            String authorizationHeader
+    ) {
+
+        // 1. 현재 로그인한 Customer 조회
+        Customer customer =
+                customerService.getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 2. Customer와 연결된 Seller 조회
+        Seller seller =
+                sellerRepository
+                        .findByCustomer(customer)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Seller가 아닙니다."
+                                )
+                        );
+
+
+        // 3. Seller가 소유한 Store 조회
+        Store store =
+                storeRepository
+                        .findBySeller(seller)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "등록된 가게가 없습니다."
+                                )
+                        );
+
+
+        // 4. Store Entity -> StoreResponse
+        return new StoreResponse(
+                store.getId(),
+                store.getName(),
+                store.getDescription(),
+                store.getAddress(),
+                store.getImageUrl()
+        );
+    }
+
     // =========================
     // 가게 상세 조회
     // =========================
@@ -246,6 +293,7 @@ public class StoreService {
                 store.getImageUrl()
         );
     }
+
     // =========================
     // 전체 가게 목록 조회
     // =========================
@@ -269,5 +317,49 @@ public class StoreService {
 
                 // 3. List<StoreResponse>로 반환
                 .toList();
+    }
+
+    // =========================
+// 현재 로그인 사용자가
+// 해당 Store의 주인 Seller인지 확인
+// =========================
+    public boolean isStoreOwner(
+            Long storeId,
+            String authorizationHeader
+    ) {
+
+        // 1. 현재 로그인 Customer
+        Customer customer =
+                customerService.getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 2. Store 조회
+        Store store =
+                storeRepository
+                        .findById(storeId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "존재하지 않는 가게입니다."
+                                )
+                        );
+
+
+        // 3. 현재 Customer가 Seller인지 확인
+        return sellerRepository
+                .findByCustomer(customer)
+
+                // Seller라면 Store 주인과 비교
+                .map(seller ->
+                        store.getSeller()
+                                .getId()
+                                .equals(
+                                        seller.getId()
+                                )
+                )
+
+                // 일반 Customer면 false
+                .orElse(false);
     }
 }

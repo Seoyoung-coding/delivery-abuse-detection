@@ -90,4 +90,48 @@ public class StoreController {
                 stores
         );
     }
+
+    // =========================
+    // Seller : 본인의 Store 조회
+    // =========================
+    @GetMapping("/my-store")
+    public ResponseEntity<StoreResponse> getMyStore(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
+    ) {
+
+        StoreResponse store =
+                storeService.getMyStore(
+                        authorizationHeader
+                );
+
+        return ResponseEntity.ok(
+                store
+        );
+    }
+
+    // =========================
+    // 현재 로그인 사용자가
+    // 이 Store의 주인 Seller인지 확인
+    // =========================
+    @GetMapping("/{storeId}/owner-check")
+    public ResponseEntity<Boolean> checkStoreOwner(
+
+            @PathVariable Long storeId,
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
+    ) {
+
+        boolean isOwner =
+                storeService.isStoreOwner(
+                        storeId,
+                        authorizationHeader
+                );
+
+        return ResponseEntity.ok(
+                isOwner
+        );
+    }
 }
