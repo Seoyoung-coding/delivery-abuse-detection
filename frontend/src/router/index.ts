@@ -24,6 +24,9 @@ import AccountInformationPage
 import ChangePasswordPage
   from '@/views/customer/ChangePasswordPage.vue'
 
+import NotificationPage
+  from '@/views/customer/NotificationPage.vue'
+
 
 // ======================================================
 // Seller
@@ -183,11 +186,17 @@ const routes = [
   },
 
   // Home에서 Store 클릭했을 때
-// 해당 Store 상세 페이지
+  // 해당 Store 상세 페이지
   {
   path: '/stores/:id',
   name: 'StoreDetailPublic',
   component: StoreDetailPage
+  },
+
+  {
+  path: '/notifications',
+  name: 'Notifications',
+  component: NotificationPage
   },
 
   // ====================================================

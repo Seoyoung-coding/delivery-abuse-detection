@@ -119,7 +119,10 @@
 
 
       <!-- Notifications -->
-      <div class="setting-item">
+      <div
+      class="setting-item"
+      @click="goToNotifications"
+    >
 
         <div class="setting-left">
 
@@ -360,6 +363,14 @@ const goToChangePassword = () => {
 
   router.push(
     '/change-password'
+  )
+
+}
+
+const goToNotifications = () => {
+
+  router.push(
+    '/notifications'
   )
 
 }

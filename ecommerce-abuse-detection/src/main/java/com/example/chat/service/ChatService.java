@@ -2,6 +2,7 @@ package com.example.chat.service;
 
 import com.example.admin.domain.Admin;
 import com.example.admin.enums.AdminRole;
+import com.example.admin.repository.SellerApplicationRepository;
 import com.example.admin.service.AdminAuthService;
 import com.example.chat.domain.ChatMessage;
 import com.example.chat.domain.ChatRoom;
@@ -11,13 +12,14 @@ import com.example.chat.enums.MessageSender;
 import com.example.chat.enums.SupportType;
 import com.example.chat.repository.ChatMessageRepository;
 import com.example.chat.repository.ChatRoomRepository;
-import com.example.chat.enums.ChatClosedBy;
+
 
 import com.example.customer.domain.Customer;
 import com.example.customer.service.CustomerService;
 
 import com.example.notification.service.NotificationService;
 import com.example.seller.domain.Seller;
+import com.example.seller.enums.SellerApplicationStatus;
 import com.example.seller.repository.SellerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +40,7 @@ public class ChatService {
     private final CustomerService customerService;
     private final AdminAuthService adminAuthService;
     private final NotificationService notificationService;
-
+    private final SellerApplicationRepository sellerApplicationRepository;
 
     // =====================================================
     // Seller Support
@@ -129,16 +131,24 @@ public class ChatService {
         //
         // Seller와 연결되어 있다면
         // Customer Support 사용 불가
-        boolean isSeller =
-                sellerRepository
-                        .findByCustomer(customer)
-                        .isPresent();
+// 2. 가장 최근 Seller Application 상태 확인
+        boolean isApprovedSeller =
+                sellerApplicationRepository
+                        .findTopByCustomerOrderByIdDesc(
+                                customer
+                        )
+                        .map(application ->
+                                application.getStatus()
+                                        == SellerApplicationStatus.APPROVED
+                        )
+                        .orElse(false);
 
 
-        if (isSeller) {
+        // 3. APPROVED Seller만 Customer Support 차단
+        if (isApprovedSeller) {
 
             throw new RuntimeException(
-                    "Seller 계정은 Customer Support를 이용할 수 없습니다."
+                    "승인된 Seller 계정은 Seller Support를 이용해주세요."
             );
         }
 
