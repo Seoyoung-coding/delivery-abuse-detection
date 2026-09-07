@@ -11,10 +11,12 @@ import com.example.chat.enums.MessageSender;
 import com.example.chat.enums.SupportType;
 import com.example.chat.repository.ChatMessageRepository;
 import com.example.chat.repository.ChatRoomRepository;
+import com.example.chat.enums.ChatClosedBy;
 
 import com.example.customer.domain.Customer;
 import com.example.customer.service.CustomerService;
 
+import com.example.notification.service.NotificationService;
 import com.example.seller.domain.Seller;
 import com.example.seller.repository.SellerRepository;
 
@@ -35,7 +37,7 @@ public class ChatService {
     private final SellerRepository sellerRepository;
     private final CustomerService customerService;
     private final AdminAuthService adminAuthService;
-    private final ChatClosedBy chatClosedBy;
+    private final NotificationService notificationService;
 
 
     // =====================================================
@@ -600,6 +602,13 @@ public class ChatService {
                 ChatClosedBy.SELLER,
                 "Seller가 상담을 종료했습니다."
         );
+
+        notificationService
+                .createSupportClosedNotification(
+                        customer,
+                        room.getId()
+                );
+
     }
 
 

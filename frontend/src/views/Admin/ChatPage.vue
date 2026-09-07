@@ -311,6 +311,14 @@
           @send="sendMessage"
         />
 
+        <button
+        v-if="selectedAdminRoom"
+        class="close-chat-button"
+        @click="closeChat"
+      >
+        Close Chat
+      </button>
+
 
         <div
           v-else
@@ -349,6 +357,13 @@
 
         @send="sendMessage"
       />
+
+      <button
+      class="close-chat-button"
+      @click="closeChat"
+    >
+      Close Chat
+    </button>
 
 
       <!-- =========================
@@ -1494,7 +1509,7 @@ const sendAdminMessage =
 
 
 // =====================================================
-// USER
+// CUSTOMER
 // 메시지 전송
 // =====================================================
 
@@ -1642,6 +1657,223 @@ const sendSupportMessage =
 
     }
 
+  }
+
+
+  // =====================================================
+  // Chat 종료
+  // Customer / Seller / Admin 공용
+  // =====================================================
+
+const closeChat =
+  async () => {
+
+    const confirmed =
+      window.confirm(
+        'Are you sure you want to close this conversation?'
+      )
+
+
+    if (!confirmed) {
+      return
+    }
+
+
+    try {
+
+      let response:
+        Response
+
+
+      // =================================================
+      // Admin
+      // =================================================
+
+      if (isAdminMode.value) {
+
+        if (!selectedAdminRoom.value) {
+          return
+        }
+
+
+        const token =
+          getAdminToken()
+
+
+        if (!token) {
+
+          errorMessage.value =
+            'Admin login is required.'
+
+          return
+        }
+
+
+        response =
+          await fetch(
+            `http://localhost:8080/api/chat/admin/rooms/${selectedAdminRoom.value.roomId}/close`,
+            {
+              method: 'PATCH',
+
+              headers:
+                createHeaders(
+                  token
+                )
+            }
+          )
+
+
+        if (!response.ok) {
+
+          const message =
+            await response.text()
+
+          throw new Error(
+            message ||
+            'Failed to close chat.'
+          )
+        }
+
+
+        // 종료된 방은 ACTIVE 목록에서 제거
+        selectedAdminRoom.value =
+          null
+
+        messages.value =
+          []
+
+
+        // 남아있는 ACTIVE 채팅방 다시 조회
+        await loadAdminRooms()
+
+
+        return
+      }
+
+
+      // =================================================
+      // Customer / Seller
+      // =================================================
+
+      const token =
+        getUserToken()
+
+
+      if (!token) {
+
+        errorMessage.value =
+          'Login is required.'
+
+        return
+      }
+
+
+      // =================================================
+      // Seller Support 종료
+      // =================================================
+
+      if (
+        selectedSupportType.value ===
+        'SELLER_SUPPORT'
+      ) {
+
+        if (
+          verifiedSellerId.value ===
+          null
+        ) {
+
+          return
+        }
+
+
+        response =
+          await fetch(
+            `http://localhost:8080/api/chat/support/seller/close?sellerId=${verifiedSellerId.value}`,
+            {
+              method: 'PATCH',
+
+              headers:
+                createHeaders(
+                  token
+                )
+            }
+          )
+      }
+
+
+      // =================================================
+      // Customer Support 종료
+      // =================================================
+
+      else {
+
+        response =
+          await fetch(
+            'http://localhost:8080/api/chat/support/customer/close',
+            {
+              method: 'PATCH',
+
+              headers:
+                createHeaders(
+                  token
+                )
+            }
+          )
+      }
+
+
+      if (!response.ok) {
+
+        const message =
+          await response.text()
+
+
+        throw new Error(
+          message ||
+          'Failed to close chat.'
+        )
+      }
+
+
+      // =================================================
+      // 종료 성공
+      // =================================================
+
+      stopPolling()
+
+
+      messages.value =
+        []
+
+
+      awaitingAdmin.value =
+        false
+
+
+      verifiedSellerId.value =
+        null
+
+
+      selectedSupportType.value =
+        null
+
+
+      // 다시 Seller / Customer 선택 화면으로
+      supportStep.value =
+        'select'
+
+
+    } catch (error) {
+
+      console.error(
+        'Chat 종료 실패:',
+        error
+      )
+
+
+      errorMessage.value =
+        'Failed to close the conversation.'
+    }
   }
 
 
@@ -2405,6 +2637,39 @@ onUnmounted(() => {
     max-height: 300px;
 
   }
+
+}
+
+.close-chat-button {
+
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 11px;
+
+  border: 1px solid #dddddd;
+
+  border-radius: 12px;
+
+  background-color: white;
+
+  color: #8f817a;
+
+  font-family: inherit;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+}
+
+
+.close-chat-button:hover {
+
+  background-color: #f7f7f7;
 
 }
 

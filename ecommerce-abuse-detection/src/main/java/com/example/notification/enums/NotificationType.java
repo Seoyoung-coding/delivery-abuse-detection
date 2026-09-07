@@ -1,4 +1,4 @@
-package com.example.chat.enums;
+package com.example.notification.enums;
 
 public enum NotificationType {
     SUPPORT_CLOSED,
