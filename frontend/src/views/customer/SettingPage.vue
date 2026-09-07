@@ -35,7 +35,10 @@
 
 
       <!-- Account Information -->
-      <div class="setting-item">
+      <div
+        class="setting-item"
+        @click="goToAccountInformation"
+      >
 
         <div class="setting-left">
 
@@ -67,7 +70,10 @@
 
 
       <!-- Change Password -->
-      <div class="setting-item">
+      <div
+        class="setting-item"
+        @click="goToChangePassword"
+      >
 
         <div class="setting-left">
 
@@ -341,6 +347,24 @@ const router =
   useRouter()
 
 
+const goToAccountInformation = () => {
+
+  router.push(
+    '/account-information'
+  )
+
+}
+
+
+const goToChangePassword = () => {
+
+  router.push(
+    '/change-password'
+  )
+
+}
+
+
 // =========================
 // 3. Help & Support 이동
 // =========================
@@ -355,45 +379,48 @@ const goToHelpSupport = () => {
 
 
 // =========================
-// 3. 뒤로가기
+// 4. 뒤로가기
 // =========================
 
 const goBack = () => {
 
-  router.push('/profile')
+  router.push(
+    '/profile'
+  )
 
 }
 
 
 // =========================
-// 4. Seller 신청 페이지 이동
+// 5. Seller 신청 페이지 이동
 // =========================
 
 const goToSellerApplication = () => {
 
-  router.push('/seller-application')
+  router.push(
+    '/seller-application'
+  )
 
 }
 
 
-
 // =========================
-// 5. Logout
+// 6. Logout
 // =========================
 
 const logout = () => {
 
-  // 로그인 JWT 삭제
-  localStorage.removeItem('token')
+  localStorage.removeItem(
+    'token'
+  )
 
-
-  // 로그인 페이지 이동
-  router.push('/login')
+  router.push(
+    '/login'
+  )
 
 }
 
 </script>
-
 
 <style scoped>
 

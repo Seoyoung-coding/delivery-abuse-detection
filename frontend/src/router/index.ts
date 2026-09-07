@@ -18,6 +18,12 @@ import OrderPage from '@/views/customer/OrderPage.vue'
 import ProfilePage from '@/views/customer/ProfilePage.vue'
 import SettingPage from '@/views/customer/SettingPage.vue'
 
+import AccountInformationPage
+  from '@/views/customer/AccountInformationPage.vue'
+
+import ChangePasswordPage
+  from '@/views/customer/ChangePasswordPage.vue'
+
 
 // ======================================================
 // Seller
@@ -131,6 +137,18 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: SettingPage
+  },
+
+    {
+    path: '/account-information',
+    name: 'AccountInformation',
+    component: AccountInformationPage
+  },
+
+  {
+    path: '/change-password',
+    name: 'ChangePassword',
+    component: ChangePasswordPage
   },
 
 
