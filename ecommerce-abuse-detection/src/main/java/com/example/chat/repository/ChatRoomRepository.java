@@ -1,6 +1,7 @@
 package com.example.chat.repository;
 
 import com.example.chat.domain.ChatRoom;
+import com.example.chat.enums.ChatRoomStatus;
 import com.example.chat.enums.SupportType;
 import com.example.customer.domain.Customer;
 
@@ -15,11 +16,8 @@ public interface ChatRoomRepository
 
 
     // =====================================================
-    // 사용자 + 상담 종류로 채팅방 조회
-    //
-    // 예:
-    // Customer 7 + SELLER_SUPPORT
-    // Customer 7 + CUSTOMER_SUPPORT
+    // 기존 메서드
+    // 다음 단계에서 Service 수정 후 삭제 예정
     // =====================================================
 
     Optional<ChatRoom> findByCustomerAndSupportType(
@@ -28,17 +26,31 @@ public interface ChatRoomRepository
     );
 
 
-    // =====================================================
-    // Admin : 담당 상담 종류의 채팅방 전체 조회
-    //
-    // SELLER_ADMIN
-    // -> SELLER_SUPPORT만 조회
-    //
-    // CUSTOMER_ADMIN
-    // -> CUSTOMER_SUPPORT만 조회
-    // =====================================================
-
     List<ChatRoom> findBySupportTypeOrderByUpdatedAtDesc(
             SupportType supportType
+    );
+
+
+    // =====================================================
+    // 현재 ACTIVE 상태인 상담방 조회
+    //
+    // 사용자 한 명이 같은 SupportType에서
+    // 현재 진행 중인 방을 찾을 때 사용
+    // =====================================================
+
+    Optional<ChatRoom> findByCustomerAndSupportTypeAndStatus(
+            Customer customer,
+            SupportType supportType,
+            ChatRoomStatus status
+    );
+
+
+    // =====================================================
+    // Admin : 본인 담당 ACTIVE 상담방만 조회
+    // =====================================================
+
+    List<ChatRoom> findBySupportTypeAndStatusOrderByUpdatedAtDesc(
+            SupportType supportType,
+            ChatRoomStatus status
     );
 }

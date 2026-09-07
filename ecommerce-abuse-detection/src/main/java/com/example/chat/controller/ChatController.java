@@ -417,4 +417,77 @@ public class ChatController {
                 response
         );
     }
+
+    // =====================================================
+// Seller : Seller Support 종료
+//
+// PATCH /api/chat/support/seller/close?sellerId=3
+// =====================================================
+    @PatchMapping("/support/seller/close")
+    public ResponseEntity<String> closeSellerSupport(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestParam
+            Long sellerId
+    ) {
+
+        chatService.closeSellerSupportRoom(
+                authorizationHeader,
+                sellerId
+        );
+
+        return ResponseEntity.ok(
+                "Seller Support chat closed"
+        );
+    }
+
+
+    // =====================================================
+    // Customer : Customer Support 종료
+    //
+    // PATCH /api/chat/support/customer/close
+    // =====================================================
+    @PatchMapping("/support/customer/close")
+    public ResponseEntity<String> closeCustomerSupport(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
+    ) {
+
+        chatService.closeCustomerSupportRoom(
+                authorizationHeader
+        );
+
+        return ResponseEntity.ok(
+                "Customer Support chat closed"
+        );
+    }
+
+
+    // =====================================================
+    // Admin : 담당 채팅 종료
+    //
+    // PATCH /api/chat/admin/rooms/{roomId}/close
+    // =====================================================
+    @PatchMapping("/admin/rooms/{roomId}/close")
+    public ResponseEntity<String> closeAdminChat(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @PathVariable
+            Long roomId
+    ) {
+
+        chatService.closeAdminRoom(
+                authorizationHeader,
+                roomId
+        );
+
+        return ResponseEntity.ok(
+                "Support chat closed"
+        );
+    }
 }

@@ -5,6 +5,8 @@ import com.example.admin.enums.AdminRole;
 import com.example.admin.service.AdminAuthService;
 import com.example.chat.domain.ChatMessage;
 import com.example.chat.domain.ChatRoom;
+import com.example.chat.enums.ChatClosedBy;
+import com.example.chat.enums.ChatRoomStatus;
 import com.example.chat.enums.MessageSender;
 import com.example.chat.enums.SupportType;
 import com.example.chat.repository.ChatMessageRepository;
@@ -33,6 +35,7 @@ public class ChatService {
     private final SellerRepository sellerRepository;
     private final CustomerService customerService;
     private final AdminAuthService adminAuthService;
+    private final ChatClosedBy chatClosedBy;
 
 
     // =====================================================
@@ -82,9 +85,10 @@ public class ChatService {
         // Seller Support 채팅방 조회
         // 없으면 새로 생성
         return chatRoomRepository
-                .findByCustomerAndSupportType(
+                .findByCustomerAndSupportTypeAndStatus(
                         customer,
-                        SupportType.SELLER_SUPPORT
+                        SupportType.SELLER_SUPPORT,
+                        ChatRoomStatus.ACTIVE
                 )
                 .orElseGet(() -> {
 
@@ -102,11 +106,11 @@ public class ChatService {
 
 
     // =====================================================
-// Customer Support
-// 일반 Customer만 채팅방 가져오기 / 생성
-//
-// Seller 계정은 Customer Support 사용 불가
-// =====================================================
+    // Customer Support
+    // 일반 Customer만 채팅방 가져오기 / 생성
+    //
+    // Seller 계정은 Customer Support 사용 불가
+    // =====================================================
     @Transactional
     public ChatRoom getOrCreateCustomerSupportRoom(
             String authorizationHeader
@@ -140,9 +144,10 @@ public class ChatService {
         // 3. Customer Support 채팅방 조회
         // 없으면 새로 생성
         return chatRoomRepository
-                .findByCustomerAndSupportType(
+                .findByCustomerAndSupportTypeAndStatus(
                         customer,
-                        SupportType.CUSTOMER_SUPPORT
+                        SupportType.CUSTOMER_SUPPORT,
+                        ChatRoomStatus.ACTIVE
                 )
                 .orElseGet(() -> {
 
@@ -326,11 +331,11 @@ public class ChatService {
 
         // 3. 본인이 담당하는 상담방만 조회
         return chatRoomRepository
-                .findBySupportTypeOrderByUpdatedAtDesc(
-                        supportType
+                .findBySupportTypeAndStatusOrderByUpdatedAtDesc(
+                        supportType,
+                        ChatRoomStatus.ACTIVE
                 );
     }
-
 
     // =====================================================
     // Admin : 특정 채팅방 메시지 조회
@@ -508,8 +513,8 @@ public class ChatService {
     }
 
     // =====================================================
-// Seller Support : Seller ID 검증
-// =====================================================
+    // Seller Support : Seller ID 검증
+    // =====================================================
     @Transactional(readOnly = true)
     public boolean verifySellerIdentity(
             String authorizationHeader,
@@ -536,4 +541,168 @@ public class ChatService {
                 // Seller 자체가 아니면 false
                 .orElse(false);
     }
+    // =====================================================
+    // Seller : Seller Support 채팅 종료
+    // =====================================================
+    @Transactional
+    public void closeSellerSupportRoom(
+            String authorizationHeader,
+            Long sellerId
+    ) {
+
+        // 1. 현재 로그인 Customer
+        Customer customer =
+                customerService.getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 2. 현재 계정의 실제 Seller 조회
+        Seller seller =
+                sellerRepository
+                        .findByCustomer(customer)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "현재 계정은 Seller 계정이 아닙니다."
+                                )
+                        );
+
+
+        // 3. 입력 Seller ID 검증
+        if (
+                !seller.getId()
+                        .equals(sellerId)
+        ) {
+
+            throw new RuntimeException(
+                    "Seller ID가 현재 계정과 일치하지 않습니다."
+            );
+        }
+
+
+        // 4. 현재 ACTIVE Seller Support 방 조회
+        ChatRoom room =
+                chatRoomRepository
+                        .findByCustomerAndSupportTypeAndStatus(
+                                customer,
+                                SupportType.SELLER_SUPPORT,
+                                ChatRoomStatus.ACTIVE
+                        )
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "진행 중인 Seller Support 채팅이 없습니다."
+                                )
+                        );
+
+
+        // 5. 종료
+        room.close(
+                ChatClosedBy.SELLER,
+                "Seller가 상담을 종료했습니다."
+        );
+    }
+
+
+    // =====================================================
+    // Customer : Customer Support 채팅 종료
+    // =====================================================
+    @Transactional
+    public void closeCustomerSupportRoom(
+            String authorizationHeader
+    ) {
+
+        // 1. 현재 로그인 Customer
+        Customer customer =
+                customerService.getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 2. Seller 계정은 Customer Support 종료 API 사용 불가
+        if (
+                sellerRepository
+                        .findByCustomer(customer)
+                        .isPresent()
+        ) {
+
+            throw new RuntimeException(
+                    "Seller 계정은 Customer Support를 이용할 수 없습니다."
+            );
+        }
+
+
+        // 3. ACTIVE Customer Support 방 조회
+        ChatRoom room =
+                chatRoomRepository
+                        .findByCustomerAndSupportTypeAndStatus(
+                                customer,
+                                SupportType.CUSTOMER_SUPPORT,
+                                ChatRoomStatus.ACTIVE
+                        )
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "진행 중인 Customer Support 채팅이 없습니다."
+                                )
+                        );
+
+
+        // 4. 종료
+        room.close(
+                ChatClosedBy.CUSTOMER,
+                "Customer가 상담을 종료했습니다."
+        );
+    }
+
+
+    // =====================================================
+    // Admin : 담당 Support 채팅 종료
+    // =====================================================
+    @Transactional
+    public void closeAdminRoom(
+            String authorizationHeader,
+            Long roomId
+    ) {
+
+        // 1. 실제 로그인 Admin
+        Admin admin =
+                adminAuthService.getCurrentAdmin(
+                        authorizationHeader
+                );
+
+
+        // 2. ChatRoom 조회
+        ChatRoom room =
+                chatRoomRepository
+                        .findById(roomId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "채팅방을 찾을 수 없습니다."
+                                )
+                        );
+
+
+        // 3. SELLER_ADMIN / CUSTOMER_ADMIN 담당방 검사
+        validateAdminRoomAccess(
+                admin,
+                room
+        );
+
+
+        // 4. 이미 종료된 방인지 확인
+        if (room.isClosed()) {
+
+            throw new RuntimeException(
+                    "이미 종료된 채팅방입니다."
+            );
+        }
+
+
+        // 5. 종료
+        room.close(
+                ChatClosedBy.ADMIN,
+                "상담원이 상담을 종료했습니다."
+        );
+    }
+
+
 }

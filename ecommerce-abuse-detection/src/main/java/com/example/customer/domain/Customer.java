@@ -105,4 +105,12 @@ public class Customer {
         this.deletedAt =
                 LocalDateTime.now();
     }
+
+    public void changeUsername(
+            String username
+    ) {
+
+        this.username =
+                username;
+    }
 }

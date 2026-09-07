@@ -1,5 +1,7 @@
 package com.example.chat.domain;
 
+import com.example.chat.enums.ChatClosedBy;
+import com.example.chat.enums.ChatRoomStatus;
 import com.example.chat.enums.SupportType;
 import com.example.customer.domain.Customer;
 
@@ -14,19 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-
-@Table(
-        name = "chat_room",
-
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        columnNames = {
-                                "customer_id",
-                                "support_type"
-                        }
-                )
-        }
-)
+@Table(name = "chat_room")
 public class ChatRoom {
 
     // =========================
@@ -41,13 +31,6 @@ public class ChatRoom {
     // =========================
     // 상담을 요청한 사용자
     // =========================
-    //
-    // Customer든 Seller든
-    // 기본 계정은 Customer를 기준으로 식별
-    //
-    // Seller도 Customer와 연결되어 있으므로
-    // Seller 상담 역시 Customer ID를 사용
-    //
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -59,14 +42,10 @@ public class ChatRoom {
 
     // =========================
     // 상담 종류
-    // =========================
     //
     // SELLER_SUPPORT
-    // → Seller 담당 Admin
-    //
     // CUSTOMER_SUPPORT
-    // → Customer 담당 Admin
-    //
+    // =========================
 
     @Enumerated(EnumType.STRING)
     @Column(
@@ -75,12 +54,60 @@ public class ChatRoom {
     )
     private SupportType supportType;
 
+
+    // =========================
+    // 채팅방 상태
+    //
+    // ACTIVE
+    // CLOSED
+    // =========================
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ChatRoomStatus status =
+            ChatRoomStatus.ACTIVE;
+
+
+    // =========================
+    // 누가 종료했는지
+    //
+    // CUSTOMER
+    // SELLER
+    // ADMIN
+    // SYSTEM
+    // =========================
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "closed_by")
+    private ChatClosedBy closedBy;
+
+
+    // =========================
+    // 종료 시간
+    // =========================
+
+    private LocalDateTime closedAt;
+
+
+    // =========================
+    // 종료 사유
+    // =========================
+
+    @Column(length = 500)
+    private String closeReason;
+
+
+    // =========================
+    // 생성 / 최근 활동 시간
+    // =========================
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
 
     // =========================
-    // 채팅방 생성
+    // ChatRoom 생성
     // =========================
 
     public ChatRoom(
@@ -88,8 +115,14 @@ public class ChatRoom {
             SupportType supportType
     ) {
 
-        this.customer = customer;
-        this.supportType = supportType;
+        this.customer =
+                customer;
+
+        this.supportType =
+                supportType;
+
+        this.status =
+                ChatRoomStatus.ACTIVE;
 
         this.createdAt =
                 LocalDateTime.now();
@@ -99,8 +132,50 @@ public class ChatRoom {
     }
 
 
+    // =========================
+    // 최근 메시지 시간 갱신
+    // =========================
+
     public void updateTimestamp() {
+
         this.updatedAt =
                 LocalDateTime.now();
+    }
+
+
+    // =========================
+    // 채팅방 종료
+    // =========================
+
+    public void close(
+            ChatClosedBy closedBy,
+            String reason
+    ) {
+
+        this.status =
+                ChatRoomStatus.CLOSED;
+
+        this.closedBy =
+                closedBy;
+
+        this.closeReason =
+                reason;
+
+        this.closedAt =
+                LocalDateTime.now();
+
+        this.updatedAt =
+                LocalDateTime.now();
+    }
+
+
+    // =========================
+    // 종료 여부
+    // =========================
+
+    public boolean isClosed() {
+
+        return this.status ==
+                ChatRoomStatus.CLOSED;
     }
 }

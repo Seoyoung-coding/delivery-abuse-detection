@@ -3,6 +3,7 @@ package com.example.customer.controller;
 import com.example.customer.dto.request.LoginRequest;
 import com.example.customer.dto.request.PasswordChangeRequest;
 import com.example.customer.dto.request.SignupRequest;
+import com.example.customer.dto.request.UsernameChangeRequest;
 import com.example.customer.dto.response.AuthResponse;
 import com.example.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -45,27 +46,6 @@ public class CustomerController {
         return ResponseEntity.ok(email);
     }
 
-    // 현재 로그인한 사용자의 비밀번호 변경
-    @PatchMapping("/me/password")
-    public ResponseEntity<String> changePassword(
-
-            // 1. JWT가 들어있는 Authorization Header 받기
-            @RequestHeader("Authorization") String authorizationHeader,
-
-            // 2. 사용자가 입력한 새 비밀번호 받기
-            @RequestBody PasswordChangeRequest request
-    ) {
-
-        // 3. Service에 비밀번호 변경 요청
-        customerService.changePassword(
-                authorizationHeader,
-                request
-        );
-
-        // 4. 변경 성공 응답
-        return ResponseEntity.ok("비밀번호 변경 성공");
-    }
-
     // 현재 로그인한 사용자 회원 탈퇴
     @DeleteMapping("/me")
     public ResponseEntity<String> deleteMyAccount(
@@ -79,6 +59,52 @@ public class CustomerController {
         );
         return ResponseEntity.ok(
                 "회원 탈퇴 성공"
+        );
+    }
+
+    // =========================
+    // Username 변경
+    // =========================
+    @PatchMapping("/me/username")
+    public ResponseEntity<String> changeUsername(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestBody
+            UsernameChangeRequest request
+    ) {
+
+        customerService.changeUsername(
+                authorizationHeader,
+                request
+        );
+
+        return ResponseEntity.ok(
+                "Username 변경 성공"
+        );
+    }
+
+    // =========================
+    // Password 변경
+    // =========================
+    @PatchMapping("/me/password")
+    public ResponseEntity<String> changePassword(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestBody
+            PasswordChangeRequest request
+    ) {
+
+        customerService.changePassword(
+                authorizationHeader,
+                request
+        );
+
+        return ResponseEntity.ok(
+                "Password 변경 성공"
         );
     }
 }

@@ -4,6 +4,7 @@ import com.example.customer.domain.Customer;
 import com.example.customer.dto.request.LoginRequest;
 import com.example.customer.dto.request.PasswordChangeRequest;
 import com.example.customer.dto.request.SignupRequest;
+import com.example.customer.dto.request.UsernameChangeRequest;
 import com.example.customer.dto.response.AuthResponse;
 import com.example.customer.repository.CustomerRepository;
 
@@ -164,6 +165,77 @@ public class CustomerService {
         return new AuthResponse(
                 "Login Success",
                 token
+        );
+    }
+
+    // =========================
+    // Username 변경
+    // =========================
+    public void changeUsername(
+            String authorizationHeader,
+            UsernameChangeRequest request
+    ) {
+
+        // 1. 현재 로그인 Customer 조회
+        Customer customer =
+                getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 2. 새 Username 가져오기
+        String newUsername =
+                request.getNewUsername();
+
+
+        // 3. 빈 값 방지
+        if (
+                newUsername == null ||
+                        newUsername.isBlank()
+        ) {
+
+            throw new IllegalArgumentException(
+                    "새 Username을 입력해주세요."
+            );
+        }
+
+
+        // 4. 현재 Username과 동일한 경우
+        if (
+                newUsername.equals(
+                        customer.getUsername()
+                )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "현재 Username과 동일합니다."
+            );
+        }
+
+
+        // 5. Username 중복 검사
+        if (
+                customerRepository
+                        .existsByUsername(
+                                newUsername
+                        )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "이미 사용 중인 Username입니다."
+            );
+        }
+
+
+        // 6. Username 변경
+        customer.changeUsername(
+                newUsername
+        );
+
+
+        // 7. DB 저장
+        customerRepository.save(
+                customer
         );
     }
 
