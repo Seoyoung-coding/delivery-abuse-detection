@@ -1,38 +1,106 @@
 package com.example.chat.domain;
 
-import com.example.seller.domain.Seller;
+import com.example.chat.enums.SupportType;
+import com.example.customer.domain.Customer;
+
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+
 @Entity
 @Getter
 @NoArgsConstructor
-public class ChatRoom { // "이 Seller가 Admin과 대화하는 방
+
+@Table(
+        name = "chat_room",
+
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {
+                                "customer_id",
+                                "support_type"
+                        }
+                )
+        }
+)
+public class ChatRoom {
+
+    // =========================
+    // ChatRoom ID
+    // =========================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne // seller 한명당 1개의 채팅방
+
+    // =========================
+    // 상담을 요청한 사용자
+    // =========================
+    //
+    // Customer든 Seller든
+    // 기본 계정은 Customer를 기준으로 식별
+    //
+    // Seller도 Customer와 연결되어 있으므로
+    // Seller 상담 역시 Customer ID를 사용
+    //
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "seller_id",
-            nullable = false,
-            unique = true
+            name = "customer_id",
+            nullable = false
     )
-    private Seller seller;
+    private Customer customer;
+
+
+    // =========================
+    // 상담 종류
+    // =========================
+    //
+    // SELLER_SUPPORT
+    // → Seller 담당 Admin
+    //
+    // CUSTOMER_SUPPORT
+    // → Customer 담당 Admin
+    //
+
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "support_type",
+            nullable = false
+    )
+    private SupportType supportType;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    public void updateTimestamp() {
-        this.updatedAt = LocalDateTime.now();
+
+
+    // =========================
+    // 채팅방 생성
+    // =========================
+
+    public ChatRoom(
+            Customer customer,
+            SupportType supportType
+    ) {
+
+        this.customer = customer;
+        this.supportType = supportType;
+
+        this.createdAt =
+                LocalDateTime.now();
+
+        this.updatedAt =
+                LocalDateTime.now();
     }
 
-    public ChatRoom(Seller seller) {
-        this.seller = seller;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+
+    public void updateTimestamp() {
+        this.updatedAt =
+                LocalDateTime.now();
     }
 }

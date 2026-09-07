@@ -1,6 +1,7 @@
 package com.example.chat.controller;
 
 import com.example.chat.domain.ChatMessage;
+import com.example.chat.domain.ChatRoom;
 import com.example.chat.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,30 +23,46 @@ public class ChatController {
 
 
     // =====================================================
-    // Seller : 메시지 보내기
-    // POST /api/chat/seller/messages
+    // Seller Support : 메시지 보내기
+    //
+    // POST /api/chat/support/seller/messages
+    //
+    // body:
+    // {
+    //   "sellerId": 3,
+    //   "content": "상품 등록에 문제가 있습니다."
+    // }
     // =====================================================
-    @PostMapping("/seller/messages")
-    public ResponseEntity<Map<String, Object>> sendSellerMessage(
+
+    @PostMapping("/support/seller/messages")
+    public ResponseEntity<Map<String, Object>> sendSellerSupportMessage(
 
             @RequestHeader("Authorization")
             String authorizationHeader,
 
             @RequestBody
-            Map<String, String> request
+            Map<String, Object> request
     ) {
 
-        // 프론트에서 보낸 content 가져오기
-        String content =
-                request.get("content");
-
-
-        // DB에 메시지 저장
-        ChatMessage message =
-                chatService.sendSellerMessage(
-                        authorizationHeader,
-                        content
+        Long sellerId =
+                Long.valueOf(
+                        request.get("sellerId")
+                                .toString()
                 );
+
+
+        String content =
+                request.get("content")
+                        .toString();
+
+
+        ChatMessage message =
+                chatService
+                        .sendSellerSupportMessage(
+                                authorizationHeader,
+                                sellerId,
+                                content
+                        );
 
 
         return ResponseEntity.ok(
@@ -55,11 +72,86 @@ public class ChatController {
 
 
     // =====================================================
-    // Seller : 자기 채팅 전체 조회
-    // GET /api/chat/seller/messages
+    // Seller Support : 메시지 전체 조회
+    //
+    // GET
+    // /api/chat/support/seller/messages?sellerId=3
     // =====================================================
-    @GetMapping("/seller/messages")
-    public ResponseEntity<List<Map<String, Object>>> getSellerMessages(
+
+    @GetMapping("/support/seller/messages")
+    public ResponseEntity<List<Map<String, Object>>> getSellerSupportMessages(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestParam
+            Long sellerId
+    ) {
+
+        List<Map<String, Object>> messages =
+                chatService
+                        .getSellerSupportMessages(
+                                authorizationHeader,
+                                sellerId
+                        )
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+
+
+        return ResponseEntity.ok(
+                messages
+        );
+    }
+
+
+    // =====================================================
+    // Customer Support : 메시지 보내기
+    //
+    // POST /api/chat/support/customer/messages
+    //
+    // body:
+    // {
+    //   "content": "환불 문의입니다."
+    // }
+    // =====================================================
+
+    @PostMapping("/support/customer/messages")
+    public ResponseEntity<Map<String, Object>> sendCustomerSupportMessage(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestBody
+            Map<String, String> request
+    ) {
+
+        String content =
+                request.get("content");
+
+
+        ChatMessage message =
+                chatService
+                        .sendCustomerSupportMessage(
+                                authorizationHeader,
+                                content
+                        );
+
+
+        return ResponseEntity.ok(
+                toResponse(message)
+        );
+    }
+
+
+    // =====================================================
+    // Customer Support : 메시지 전체 조회
+    //
+    // GET /api/chat/support/customer/messages
+    // =====================================================
+
+    @GetMapping("/support/customer/messages")
+    public ResponseEntity<List<Map<String, Object>>> getCustomerSupportMessages(
 
             @RequestHeader("Authorization")
             String authorizationHeader
@@ -67,7 +159,7 @@ public class ChatController {
 
         List<Map<String, Object>> messages =
                 chatService
-                        .getSellerMessages(
+                        .getCustomerSupportMessages(
                                 authorizationHeader
                         )
                         .stream()
@@ -82,8 +174,166 @@ public class ChatController {
 
 
     // =====================================================
-    // ChatMessage -> 프론트에 보낼 데이터
+    // Admin : 본인이 담당하는 Support 채팅방 전체 조회
+    //
+    // SELLER_ADMIN
+    // -> SELLER_SUPPORT 방만 반환
+    //
+    // CUSTOMER_ADMIN
+    // -> CUSTOMER_SUPPORT 방만 반환
+    //
+    // GET /api/chat/admin/rooms
     // =====================================================
+
+    @GetMapping("/admin/rooms")
+    public ResponseEntity<List<Map<String, Object>>> getAdminRooms(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader
+    ) {
+
+        List<Map<String, Object>> rooms =
+                chatService
+                        .getAdminRooms(
+                                authorizationHeader
+                        )
+                        .stream()
+                        .map(this::roomToResponse)
+                        .toList();
+
+
+        return ResponseEntity.ok(
+                rooms
+        );
+    }
+
+
+    // =====================================================
+    // Admin : 특정 채팅방 메시지 조회
+    //
+    // 본인이 담당하는 Support 방만 접근 가능
+    //
+    // GET /api/chat/admin/rooms/{roomId}/messages
+    // =====================================================
+
+    @GetMapping("/admin/rooms/{roomId}/messages")
+    public ResponseEntity<List<Map<String, Object>>> getAdminMessages(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @PathVariable
+            Long roomId
+    ) {
+
+        List<Map<String, Object>> messages =
+                chatService
+                        .getAdminMessages(
+                                authorizationHeader,
+                                roomId
+                        )
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+
+
+        return ResponseEntity.ok(
+                messages
+        );
+    }
+
+
+    // =====================================================
+    // Admin : 특정 채팅방에 답장
+    //
+    // 실제 로그인 Admin ID가 ChatMessage에 저장됨
+    //
+    // POST /api/chat/admin/rooms/{roomId}/messages
+    // =====================================================
+
+    @PostMapping("/admin/rooms/{roomId}/messages")
+    public ResponseEntity<Map<String, Object>> sendAdminMessage(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @PathVariable
+            Long roomId,
+
+            @RequestBody
+            Map<String, String> request
+    ) {
+
+        String content =
+                request.get("content");
+
+
+        ChatMessage message =
+                chatService
+                        .sendAdminMessage(
+                                authorizationHeader,
+                                roomId,
+                                content
+                        );
+
+
+        return ResponseEntity.ok(
+                toResponse(message)
+        );
+    }
+
+
+    // =====================================================
+    // ChatRoom -> Admin 화면 응답
+    // =====================================================
+
+    private Map<String, Object> roomToResponse(
+            ChatRoom room
+    ) {
+
+        Map<String, Object> response =
+                new LinkedHashMap<>();
+
+
+        response.put(
+                "roomId",
+                room.getId()
+        );
+
+        response.put(
+                "customerId",
+                room.getCustomer().getId()
+        );
+
+        response.put(
+                "customerEmail",
+                room.getCustomer().getEmail()
+        );
+
+        response.put(
+                "supportType",
+                room.getSupportType()
+        );
+
+        response.put(
+                "createdAt",
+                room.getCreatedAt()
+        );
+
+        response.put(
+                "updatedAt",
+                room.getUpdatedAt()
+        );
+
+
+        return response;
+    }
+
+
+    // =====================================================
+    // ChatMessage -> Frontend 응답
+    // =====================================================
+
     private Map<String, Object> toResponse(
             ChatMessage message
     ) {
@@ -114,102 +364,5 @@ public class ChatController {
 
 
         return response;
-    }
-
-    // =====================================================
-// Admin : 전체 Seller 채팅방 조회
-// GET /api/chat/admin/rooms
-// =====================================================
-    @GetMapping("/admin/rooms")
-    public ResponseEntity<List<Map<String, Object>>> getAdminRooms() {
-
-        List<Map<String, Object>> rooms =
-                chatService
-                        .getAdminRooms()
-                        .stream()
-                        .map(room -> {
-
-                            Map<String, Object> response =
-                                    new LinkedHashMap<>();
-
-                            response.put(
-                                    "roomId",
-                                    room.getId()
-                            );
-
-                            response.put(
-                                    "sellerId",
-                                    room.getSeller().getId()
-                            );
-
-                            response.put(
-                                    "sellerEmail",
-                                    room.getSeller()
-                                            .getCustomer()
-                                            .getEmail()
-                            );
-
-                            response.put(
-                                    "createdAt",
-                                    room.getCreatedAt()
-                            );
-
-                            return response;
-                        })
-                        .toList();
-
-
-        return ResponseEntity.ok(
-                rooms
-        );
-    }
-
-    // =====================================================
-// Admin : 특정 Seller 채팅방 메시지 전체 조회
-// GET /api/chat/admin/rooms/{roomId}/messages
-// =====================================================
-    @GetMapping("/admin/rooms/{roomId}/messages")
-    public ResponseEntity<List<Map<String, Object>>> getAdminMessages(
-            @PathVariable Long roomId
-    ) {
-
-        List<Map<String, Object>> messages =
-                chatService
-                        .getAdminMessages(roomId)
-                        .stream()
-                        .map(this::toResponse)
-                        .toList();
-
-        return ResponseEntity.ok(
-                messages
-        );
-    }
-
-
-    // =====================================================
-    // Admin : 특정 Seller 채팅방에 답장
-    // POST /api/chat/admin/rooms/{roomId}/messages
-    // =====================================================
-    @PostMapping("/admin/rooms/{roomId}/messages")
-    public ResponseEntity<Map<String, Object>> sendAdminMessage(
-
-            @PathVariable Long roomId,
-
-            @RequestBody
-            Map<String, String> request
-    ) {
-
-        String content =
-                request.get("content");
-
-        ChatMessage message =
-                chatService.sendAdminMessage(
-                        roomId,
-                        content
-                );
-
-        return ResponseEntity.ok(
-                toResponse(message)
-        );
     }
 }

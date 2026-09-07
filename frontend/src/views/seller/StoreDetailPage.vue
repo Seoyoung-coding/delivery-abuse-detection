@@ -151,35 +151,6 @@
   </button>
 
 </div>
-
-
-<!-- Admin Support -->
-<button
-  class="chat-button"
-  @click="goToChat"
->
-  <span class="chat-icon">
-    💬
-  </span>
-
-  <div class="chat-text">
-
-    <strong>
-      Admin Support
-    </strong>
-
-    <span>
-      Chat with YamiYumi Admin
-    </span>
-
-  </div>
-
-  <span class="arrow">
-    ›
-  </span>
-
-</button>
-
       
     </section>
 
@@ -854,18 +825,6 @@ const handleImageChange = (
 
 }
 
-
-// =========================
-// 14. Seller Chat
-// =========================
-
-const goToChat = () => {
-
-  router.push(
-    '/seller/chat'
-  )
-
-}
 
 
 // =========================
