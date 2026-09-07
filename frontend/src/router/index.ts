@@ -45,7 +45,9 @@ import SellersPage from '@/views/admin/SellersPage.vue'
 
 import ReportsPage from '@/views/admin/ReportsPage.vue'
 
-import AdminChatPage from '@/views/admin/AdminChatPage.vue'
+import ChatPage from '@/views/admin/ChatPage.vue'
+
+import HelpSupportPage from '@/views/admin/HelpSupportPage.vue'
 
 
 
@@ -151,9 +153,9 @@ const routes = [
   },
 
   {
-  path: '/seller/chat',
-  name: 'seller-chat',
-  component: SellerChatPage
+    path: '/support/chat',
+    name: 'support-chat',
+    component: ChatPage
   },
 
   {
@@ -210,9 +212,15 @@ const routes = [
 
 
   {
-  path: '/admin/chat',
-  name: 'admin-chat',
-  component: AdminChatPage
+    path: '/admin/chat',
+    name: 'admin-chat',
+    component: ChatPage
+  },
+
+  {
+  path: '/help-support',
+  name: 'HelpSupport',
+  component: HelpSupportPage
   }
 
 ]

@@ -1,20 +1,32 @@
 package com.example.seller.domain;
 
 import com.example.customer.domain.Customer;
+
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 
 @Entity
 @Getter
 @NoArgsConstructor
 public class Seller {
 
+    // =========================
+    // Seller ID
+    // =========================
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne // customer 한명당 seller 하나만 연결 될 수 있음
+
+    // =========================
+    // Seller와 연결된 Customer
+    // =========================
+
+    @OneToOne
     @JoinColumn(
             name = "customer_id",
             nullable = false,
@@ -22,7 +34,33 @@ public class Seller {
     )
     private Customer customer;
 
-    public Seller(Customer customer) {
-        this.customer = customer;
+
+    // =========================
+    // Seller 계정 Email
+    //
+    // Customer의 email을 복사해서 저장
+    // DB에서 Seller 식별을 쉽게 하기 위함
+    // =========================
+
+    @Column(
+            nullable = false
+    )
+    private String email;
+
+
+    // =========================
+    // Seller 생성
+    // =========================
+
+    public Seller(
+            Customer customer
+    ) {
+
+        this.customer =
+                customer;
+
+        // 연결된 Customer의 email 자동 저장
+        this.email =
+                customer.getEmail();
     }
 }

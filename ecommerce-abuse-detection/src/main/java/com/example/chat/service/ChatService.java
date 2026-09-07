@@ -261,7 +261,7 @@ public class ChatService {
     // =====================================================
     // Seller : Seller Support 메시지 조회
     // =====================================================
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ChatMessage> getSellerSupportMessages(
             String authorizationHeader,
             Long sellerId
@@ -273,7 +273,6 @@ public class ChatService {
                         sellerId
                 );
 
-
         return chatMessageRepository
                 .findByChatRoomOrderByCreatedAtAsc(
                         room
@@ -284,7 +283,7 @@ public class ChatService {
     // =====================================================
     // Customer : Customer Support 메시지 조회
     // =====================================================
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ChatMessage> getCustomerSupportMessages(
             String authorizationHeader
     ) {
@@ -506,5 +505,35 @@ public class ChatService {
                     "담당하지 않는 상담방에는 접근할 수 없습니다."
             );
         }
+    }
+
+    // =====================================================
+// Seller Support : Seller ID 검증
+// =====================================================
+    @Transactional(readOnly = true)
+    public boolean verifySellerIdentity(
+            String authorizationHeader,
+            Long inputSellerId
+    ) {
+
+        // 현재 로그인 계정
+        Customer customer =
+                customerService.getCurrentCustomer(
+                        authorizationHeader
+                );
+
+
+        // 현재 계정과 연결된 Seller
+        return sellerRepository
+                .findByCustomer(customer)
+
+                // Seller가 존재하면 ID 비교
+                .map(seller ->
+                        seller.getId()
+                                .equals(inputSellerId)
+                )
+
+                // Seller 자체가 아니면 false
+                .orElse(false);
     }
 }

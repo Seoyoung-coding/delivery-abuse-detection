@@ -6,6 +6,7 @@ import com.example.chat.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -364,5 +365,56 @@ public class ChatController {
 
 
         return response;
+    }
+
+    // =====================================================
+    // Seller Support : Seller ID 검증
+    //
+    // GET /api/chat/support/seller/verify?sellerId=3
+    // =====================================================
+    @GetMapping("/support/seller/verify")
+    public ResponseEntity<Map<String, Object>> verifySeller(
+
+            @RequestHeader("Authorization")
+            String authorizationHeader,
+
+            @RequestParam
+            Long sellerId
+    ) {
+
+        boolean verified =
+                chatService.verifySellerIdentity(
+                        authorizationHeader,
+                        sellerId
+                );
+
+
+        Map<String, Object> response =
+                new LinkedHashMap<>();
+
+
+        response.put(
+                "verified",
+                verified
+        );
+
+
+        if (!verified) {
+
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(response);
+        }
+
+
+        response.put(
+                "sellerId",
+                sellerId
+        );
+
+
+        return ResponseEntity.ok(
+                response
+        );
     }
 }

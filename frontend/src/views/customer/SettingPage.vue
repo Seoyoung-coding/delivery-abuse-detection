@@ -191,7 +191,10 @@
 
 
       <!-- Help -->
-      <div class="setting-item">
+      <div
+        class="setting-item"
+        @click="goToHelpSupport"
+      >
 
         <div class="setting-left">
 
@@ -334,7 +337,21 @@ import BottomNav from '@/components/BottomNav.vue'
 // 2. Router
 // =========================
 
-const router = useRouter()
+const router =
+  useRouter()
+
+
+// =========================
+// 3. Help & Support 이동
+// =========================
+
+const goToHelpSupport = () => {
+
+  router.push(
+    '/help-support'
+  )
+
+}
 
 
 // =========================
@@ -357,6 +374,7 @@ const goToSellerApplication = () => {
   router.push('/seller-application')
 
 }
+
 
 
 // =========================

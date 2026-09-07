@@ -3,49 +3,89 @@
   <div class="admin-chat-page">
 
     <!-- ============================= -->
-    <!-- 왼쪽 : Seller 채팅방 목록 -->
+    <!-- 왼쪽 : Support 채팅방 목록 -->
     <!-- ============================= -->
+
     <div class="room-list">
 
       <div class="room-list-header">
-        <h2>Seller Chats</h2>
+
+        <h2>
+          Support Chats
+        </h2>
+
       </div>
 
 
       <!-- 채팅방이 없는 경우 -->
+
       <div
         v-if="rooms.length === 0"
         class="empty-rooms"
       >
-        No seller chats.
+        No support chats.
       </div>
 
 
-      <!-- Seller 채팅방 -->
+      <!-- Support 채팅방 목록 -->
+
       <button
         v-for="room in rooms"
         :key="room.roomId"
+
         class="room-item"
+
         :class="{
           active:
-            selectedRoom?.roomId === room.roomId
+            selectedRoom?.roomId ===
+            room.roomId
         }"
+
         @click="selectRoom(room)"
       >
 
+        <!-- Avatar -->
+
         <div class="room-avatar">
-          {{ getAvatar(room.sellerEmail) }}
+
+          {{
+            getAvatar(
+              room.customerEmail
+            )
+          }}
+
         </div>
 
+
+        <!-- 사용자 정보 -->
 
         <div class="room-info">
 
           <strong>
-            {{ room.sellerEmail }}
+
+            {{
+              room.customerEmail
+            }}
+
           </strong>
 
+
           <span>
-            Seller ID: {{ room.sellerId }}
+
+            {{
+              getSupportLabel(
+                room.supportType
+              )
+            }}
+
+          </span>
+
+
+          <span class="customer-id">
+
+            Customer ID:
+            {{ room.customerId }}
+
           </span>
 
         </div>
@@ -58,20 +98,28 @@
     <!-- ============================= -->
     <!-- 오른쪽 : 실제 채팅창 -->
     <!-- ============================= -->
+
     <div class="chat-area">
 
-      <!-- 선택된 Seller가 있을 때 -->
+      <!-- 채팅방 선택된 경우 -->
+
       <ChatWindow
         v-if="selectedRoom"
 
-        :title="selectedRoom.sellerEmail"
+        :title="
+          selectedRoom.customerEmail
+        "
 
         :subtitle="
-          `Seller ID: ${selectedRoom.sellerId}`
+          getSupportLabel(
+            selectedRoom.supportType
+          )
         "
 
         :avatar="
-          getAvatar(selectedRoom.sellerEmail)
+          getAvatar(
+            selectedRoom.customerEmail
+          )
         "
 
         :messages="messages"
@@ -80,12 +128,13 @@
       />
 
 
-      <!-- 아직 방을 선택하지 않은 경우 -->
+      <!-- 아직 선택된 방이 없는 경우 -->
+
       <div
         v-else
         class="empty-chat"
       >
-        Select a seller chat.
+        Select a support chat.
       </div>
 
     </div>
@@ -102,10 +151,8 @@ import {
   onMounted
 } from 'vue'
 
-
-// 경로가 다르면 이 부분만 네 폴더에 맞게 수정
-import ChatWindow from '../../components/chat/ChatWindow.vue'
-
+import ChatWindow
+  from '@/components/chat/ChatWindow.vue'
 
 
 // =====================================================
@@ -116,27 +163,39 @@ const API_BASE =
   'http://localhost:8080/api/chat/admin'
 
 
+// =====================================================
+// Support Type
+// =====================================================
+
+type SupportType =
+  | 'SELLER_SUPPORT'
+  | 'CUSTOMER_SUPPORT'
+
 
 // =====================================================
-// 채팅방 타입
-// Backend GET /api/chat/admin/rooms 응답
+// Backend ChatRoom 응답 타입
+//
+// GET /api/chat/admin/rooms
 // =====================================================
 
 interface ChatRoom {
 
   roomId: number
 
-  sellerId: number
+  customerId: number
 
-  sellerEmail: string
+  customerEmail: string
+
+  supportType: SupportType
 
   createdAt: string
+
+  updatedAt: string
 }
 
 
-
 // =====================================================
-// ChatWindow가 요구하는 Message 형식
+// ChatWindow용 Message 타입
 // =====================================================
 
 interface ChatMessage {
@@ -151,52 +210,56 @@ interface ChatMessage {
 }
 
 
-
 // =====================================================
 // 상태
 // =====================================================
 
-// 전체 Seller 채팅방
+// 현재 Admin에게 허용된
+// Support 채팅방 목록
 const rooms =
   ref<ChatRoom[]>([])
 
 
-// 현재 선택된 채팅방
+// 현재 선택한 채팅방
 const selectedRoom =
   ref<ChatRoom | null>(null)
 
 
-// 현재 선택된 채팅방의 메시지
+// 현재 채팅방의 메시지
 const messages =
   ref<ChatMessage[]>([])
 
 
-
 // =====================================================
-// Admin JWT 가져오기
+// Admin JWT
 // =====================================================
 
 const getAdminToken = () => {
 
-  // 네 로그인 코드에서 사용하는 key에 맞춰서
-  // 하나만 사용해도 됨.
   return (
-    localStorage.getItem('adminToken') ||
-    localStorage.getItem('token')
+    localStorage.getItem(
+      'adminToken'
+    )
+    ||
+    localStorage.getItem(
+      'token'
+    )
   )
 }
 
 
-
 // =====================================================
-// Authorization Header 만들기
+// Authorization Header
 // =====================================================
 
 const getHeaders = () => {
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  }
+  const headers:
+    Record<string, string> = {
+
+      'Content-Type':
+        'application/json'
+    }
 
 
   const token =
@@ -215,141 +278,310 @@ const getHeaders = () => {
 }
 
 
+// =====================================================
+// Support Type -> 화면 표시 이름
+// =====================================================
+
+const getSupportLabel = (
+  supportType: SupportType
+) => {
+
+  if (
+    supportType ===
+    'SELLER_SUPPORT'
+  ) {
+
+    return 'Seller Support'
+
+  }
+
+
+  return 'Customer Support'
+}
+
 
 // =====================================================
-// 1. 전체 Seller 채팅방 조회
+// 1. 현재 Admin 담당 채팅방 조회
+//
+// SELLER_ADMIN
+// → SELLER_SUPPORT만 Backend에서 반환
+//
+// CUSTOMER_ADMIN
+// → CUSTOMER_SUPPORT만 Backend에서 반환
 //
 // GET /api/chat/admin/rooms
 // =====================================================
 
-const loadRooms = async () => {
+const loadRooms =
+  async () => {
 
-  try {
+    try {
 
-    const response =
-      await fetch(
-        `${API_BASE}/rooms`,
-        {
-          method: 'GET',
-          headers: getHeaders()
+      const response =
+        await fetch(
+          `${API_BASE}/rooms`,
+          {
+            method:
+              'GET',
+
+            headers:
+              getHeaders()
+          }
+        )
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `채팅방 조회 실패: ${response.status}`
+        )
+
+      }
+
+
+      const data:
+        ChatRoom[] =
+          await response.json()
+
+
+      rooms.value =
+        data
+
+
+      // 기존에 선택된 방이
+      // 새 목록에 존재하지 않으면 초기화
+      if (
+        selectedRoom.value
+        &&
+        !rooms.value.some(
+          room =>
+            room.roomId ===
+            selectedRoom.value?.roomId
+        )
+      ) {
+
+        selectedRoom.value =
+          null
+
+        messages.value =
+          []
+
+      }
+
+
+      // 첫 번째 채팅방 자동 선택
+      if (
+        rooms.value.length > 0
+        &&
+        selectedRoom.value === null
+      ) {
+
+        const firstRoom =
+          rooms.value[0]
+
+
+        if (firstRoom) {
+
+          await selectRoom(
+            firstRoom
+          )
+
         }
-      )
+
+      }
 
 
-    if (!response.ok) {
+    } catch (error) {
 
-      throw new Error(
-        `채팅방 조회 실패: ${response.status}`
+      console.error(
+        'Admin 채팅방 조회 실패:',
+        error
       )
 
     }
 
-
-    const data: ChatRoom[] =
-      await response.json()
-
-
-    rooms.value = data
-
-
-    // 채팅방이 존재하면
-    // 첫 번째 방 자동 선택
-if (
-  rooms.value.length > 0 &&
-  selectedRoom.value === null
-) {
-
-  const firstRoom =
-    rooms.value[0]
-
-  if (firstRoom) {
-    await selectRoom(firstRoom)
   }
-}
 
-  } catch (error) {
 
-    console.error(
-      'Admin 채팅방 조회 실패',
-      error
+// =====================================================
+// 2. 채팅방 선택
+// =====================================================
+
+const selectRoom =
+  async (
+    room: ChatRoom
+  ) => {
+
+    selectedRoom.value =
+      room
+
+
+    await loadMessages(
+      room.roomId
     )
-
   }
 
-}
-
-
 
 // =====================================================
-// 2. Seller 채팅방 선택
-// =====================================================
-
-const selectRoom = async (
-  room: ChatRoom
-) => {
-
-  selectedRoom.value =
-    room
-
-
-  await loadMessages(
-    room.roomId
-  )
-}
-
-
-
-// =====================================================
-// 3. 선택한 채팅방 메시지 조회
+// 3. 선택된 채팅방 메시지 조회
 //
 // GET
 // /api/chat/admin/rooms/{roomId}/messages
 // =====================================================
 
-const loadMessages = async (
-  roomId: number
-) => {
+const loadMessages =
+  async (
+    roomId: number
+  ) => {
 
-  try {
+    try {
 
-    const response =
-      await fetch(
-        `${API_BASE}/rooms/${roomId}/messages`,
-        {
-          method: 'GET',
-          headers: getHeaders()
-        }
-      )
+      const response =
+        await fetch(
+          `${API_BASE}/rooms/${roomId}/messages`,
+          {
+            method:
+              'GET',
+
+            headers:
+              getHeaders()
+          }
+        )
 
 
-    if (!response.ok) {
+      if (!response.ok) {
 
-      throw new Error(
-        `메시지 조회 실패: ${response.status}`
+        throw new Error(
+          `메시지 조회 실패: ${response.status}`
+        )
+
+      }
+
+
+      const data =
+        await response.json()
+
+
+      // Backend:
+      //
+      // {
+      //   id,
+      //   sender,
+      //   content,
+      //   createdAt
+      // }
+      //
+      // ↓
+      //
+      // ChatWindow 형식으로 변환
+
+      messages.value =
+        data.map(
+          (message: any) => ({
+
+            id:
+              message.id,
+
+            text:
+              message.content,
+
+            time:
+              formatTime(
+                message.createdAt
+              ),
+
+            // Admin이 보낸 메시지는
+            // 오른쪽 말풍선
+            isMine:
+              message.sender ===
+              'ADMIN'
+
+          })
+        )
+
+
+    } catch (error) {
+
+      console.error(
+        'Admin 메시지 조회 실패:',
+        error
       )
 
     }
 
-
-    const data =
-      await response.json()
+  }
 
 
-    // Backend 형식:
-    //
-    // {
-    //   id,
-    //   sender,
-    //   content,
-    //   createdAt
-    // }
-    //
-    // ↓
-    //
-    // ChatWindow 형식으로 변경
+// =====================================================
+// 4. Admin 답장
+//
+// POST
+// /api/chat/admin/rooms/{roomId}/messages
+//
+// Backend에서 현재 JWT Admin을 찾아서
+// 실제 admin_id까지 저장
+// =====================================================
 
-    messages.value =
-      data.map((message: any) => ({
+const sendMessage =
+  async (
+    content: string
+  ) => {
+
+    if (
+      !selectedRoom.value
+    ) {
+
+      return
+
+    }
+
+
+    if (
+      !content.trim()
+    ) {
+
+      return
+
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${API_BASE}/rooms/${selectedRoom.value.roomId}/messages`,
+          {
+            method:
+              'POST',
+
+            headers:
+              getHeaders(),
+
+            body:
+              JSON.stringify({
+                content:
+                  content
+              })
+          }
+        )
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `메시지 전송 실패: ${response.status}`
+        )
+
+      }
+
+
+      const message =
+        await response.json()
+
+
+      // DB 저장 성공 후
+      // 화면에도 바로 추가
+      messages.value.push({
 
         id:
           message.id,
@@ -362,116 +594,32 @@ const loadMessages = async (
             message.createdAt
           ),
 
-        // Admin 화면이므로
-        // ADMIN 메시지는 오른쪽
         isMine:
-          message.sender === 'ADMIN'
+          true
 
-      }))
-
-
-  } catch (error) {
-
-    console.error(
-      'Admin 메시지 조회 실패',
-      error
-    )
-
-  }
-
-}
+      })
 
 
-
-// =====================================================
-// 4. Admin 답장
-//
-// POST
-// /api/chat/admin/rooms/{roomId}/messages
-// =====================================================
-
-const sendMessage = async (
-  content: string
-) => {
-
-  if (!selectedRoom.value) {
-    return
-  }
+      // updatedAt 기준 정렬을
+      // 최신 상태로 반영하기 위해
+      // 채팅방 목록 재조회
+      await loadRooms()
 
 
-  if (!content.trim()) {
-    return
-  }
+    } catch (error) {
 
-
-  try {
-
-    const response =
-      await fetch(
-        `${API_BASE}/rooms/${selectedRoom.value.roomId}/messages`,
-        {
-          method: 'POST',
-
-          headers:
-            getHeaders(),
-
-          body:
-            JSON.stringify({
-              content: content
-            })
-        }
-      )
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `메시지 전송 실패: ${response.status}`
+      console.error(
+        'Admin 메시지 전송 실패:',
+        error
       )
 
     }
 
-
-    const message =
-      await response.json()
-
-
-    // 방 전체를 다시 호출하지 않고
-    // 방금 저장된 메시지만 화면에 추가
-    messages.value.push({
-
-      id:
-        message.id,
-
-      text:
-        message.content,
-
-      time:
-        formatTime(
-          message.createdAt
-        ),
-
-      isMine:
-        true
-
-    })
-
-
-  } catch (error) {
-
-    console.error(
-      'Admin 메시지 전송 실패',
-      error
-    )
-
   }
-
-}
-
 
 
 // =====================================================
-// 이메일 첫 글자를 Avatar로 사용
+// 이메일 첫 글자 -> Avatar
 // =====================================================
 
 const getAvatar = (
@@ -479,14 +627,16 @@ const getAvatar = (
 ) => {
 
   if (!email) {
+
     return '?'
+
   }
+
 
   return email
     .charAt(0)
     .toUpperCase()
 }
-
 
 
 // =====================================================
@@ -498,28 +648,34 @@ const formatTime = (
 ) => {
 
   if (!dateString) {
+
     return ''
+
   }
 
 
   const date =
-    new Date(dateString)
+    new Date(
+      dateString
+    )
 
 
   return date.toLocaleTimeString(
     [],
     {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour:
+        '2-digit',
+
+      minute:
+        '2-digit'
     }
   )
 }
 
 
-
 // =====================================================
-// AdminChatPage 처음 열렸을 때
-// Seller 채팅방 목록 조회
+// 페이지 처음 열릴 때
+// 현재 Admin 담당 Support 목록 조회
 // =====================================================
 
 onMounted(() => {
@@ -550,7 +706,7 @@ onMounted(() => {
 
 
 /* ======================================= */
-/* Seller 채팅방 목록 */
+/* Support 채팅방 목록 */
 /* ======================================= */
 
 .room-list {
@@ -561,7 +717,8 @@ onMounted(() => {
 
   background-color: white;
 
-  border: 1px solid #eeeeee;
+  border:
+    1px solid #eeeeee;
 
   border-radius: 24px;
 
@@ -572,7 +729,8 @@ onMounted(() => {
 
 .room-list-header {
 
-  padding: 4px 8px 16px;
+  padding:
+    4px 8px 16px;
 
   border-bottom:
     1px solid #eeeeee;
@@ -591,9 +749,8 @@ onMounted(() => {
 }
 
 
-
 /* ======================================= */
-/* Seller 하나 */
+/* Support 채팅방 하나 */
 /* ======================================= */
 
 .room-item {
@@ -639,7 +796,6 @@ onMounted(() => {
 }
 
 
-
 /* ======================================= */
 /* Avatar */
 /* ======================================= */
@@ -671,9 +827,8 @@ onMounted(() => {
 }
 
 
-
 /* ======================================= */
-/* Seller 정보 */
+/* User 정보 */
 /* ======================================= */
 
 .room-info {
@@ -693,9 +848,11 @@ onMounted(() => {
 
   overflow: hidden;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 
   font-size: 12px;
 
@@ -712,6 +869,14 @@ onMounted(() => {
 
 }
 
+
+.customer-id {
+
+  font-size: 8px !important;
+
+  color: #c1b7b2 !important;
+
+}
 
 
 /* ======================================= */
@@ -743,7 +908,8 @@ onMounted(() => {
 
   height: 600px;
 
-  border: 1px solid #eeeeee;
+  border:
+    1px solid #eeeeee;
 
   border-radius: 24px;
 
