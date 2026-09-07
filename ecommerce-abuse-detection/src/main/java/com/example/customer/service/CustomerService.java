@@ -34,29 +34,90 @@ public class CustomerService {
     // =========================
     public void signup(SignupRequest request) {
 
-        String email = request.getEmail();
-        String password = request.getPassword();
+        String username =
+                request.getUsername();
+
+        String email =
+                request.getEmail();
+
+        String password =
+                request.getPassword();
 
 
-        // 이메일 중복 예외
-        if (customerRepository.existsByEmail(email)) {
+        // =========================
+        // 1. Username 입력 확인
+        // =========================
+
+        if (
+                username == null ||
+                        username.isBlank()
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Username을 입력해주세요."
+            );
+        }
+
+
+        // =========================
+        // 2. Username 중복 확인
+        // =========================
+
+        if (
+                customerRepository
+                        .existsByUsername(username)
+        ) {
+
+            throw new IllegalArgumentException(
+                    "이미 사용 중인 Username입니다."
+            );
+        }
+
+
+        // =========================
+        // 3. Email 중복 확인
+        // =========================
+
+        if (
+                customerRepository
+                        .existsByEmail(email)
+        ) {
+
             throw new DuplicateEmailException(
                     "이미 사용 중인 이메일입니다."
             );
         }
 
 
+        // =========================
+        // 4. 비밀번호 암호화
+        // =========================
+
         String encodedPassword =
-                passwordEncoder.encode(password);
+                passwordEncoder.encode(
+                        password
+                );
 
 
-        Customer customer = new Customer(
-                email,
-                encodedPassword
+        // =========================
+        // 5. Customer 생성
+        // =========================
+
+        Customer customer =
+                new Customer(
+                        username,
+                        email,
+                        encodedPassword
+                );
+
+
+        // =========================
+        // 6. DB 저장
+        // =========================
+
+        customerRepository.save(
+                customer
         );
-
-
-        customerRepository.save(customer);
     }
 
 
