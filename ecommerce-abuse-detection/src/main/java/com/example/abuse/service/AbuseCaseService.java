@@ -7,7 +7,9 @@ import com.example.customer.domain.Customer;
 import com.example.refund.domain.Refund;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import com.example.abuse.dto.response.AbuseCaseResponse;
 
+import java.util.List;
 @Service
 public class AbuseCaseService {
 
@@ -41,5 +43,29 @@ public class AbuseCaseService {
         );
 
         return abuseCaseRepository.save(abuseCase);
+    }
+
+    // 모든 Abuse Case 조회
+    public List<AbuseCaseResponse> getAllCases() {
+
+        return abuseCaseRepository.findAll()
+                .stream()
+                .map(AbuseCaseResponse::new)
+                .toList();
+    }
+
+
+    // Abuse Case 하나 상세 조회
+    public AbuseCaseResponse getCase(Long caseId) {
+
+        AbuseCase abuseCase =
+                abuseCaseRepository.findById(caseId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Abuse case not found"
+                                )
+                        );
+
+        return new AbuseCaseResponse(abuseCase);
     }
 }
