@@ -2,6 +2,7 @@ package com.example.admin.service;
 
 import com.example.admin.dto.response.AdminSellerApplicationResponse;
 import com.example.admin.repository.SellerApplicationRepository;
+import com.example.chat.service.ChatService;
 
 import com.example.seller.domain.Seller;
 import com.example.seller.domain.SellerApplication;
@@ -25,7 +26,7 @@ import java.util.List;
 public class AdminSellerApplicationService {
 
     private final SellerApplicationRepository sellerApplicationRepository;
-
+    private final ChatService chatService;
     private final SellerRepository sellerRepository;
 
     // Store 저장을 위해 추가
@@ -51,8 +52,8 @@ public class AdminSellerApplicationService {
 
 
     // =====================================================
-    // Admin : Seller 신청 승인
-    // =====================================================
+// Admin : Seller 신청 승인
+// =====================================================
     @Transactional
     public void approve(Long applicationId) {
 
@@ -96,7 +97,7 @@ public class AdminSellerApplicationService {
         );
 
 
-        // 6. SellerApplication에서 입력했던 정보로 Store 생성
+        // 6. SellerApplication 정보로 Store 생성
         Store store =
                 new Store(
                         seller,
@@ -110,6 +111,14 @@ public class AdminSellerApplicationService {
         storeRepository.save(
                 store
         );
+
+
+        // 8. 기존 Customer Support가 열려 있다면
+        // Seller 승격과 동시에 자동 종료
+        chatService
+                .autoCloseCustomerSupportOnSellerApproval(
+                        application.getCustomer()
+                );
     }
 
 
