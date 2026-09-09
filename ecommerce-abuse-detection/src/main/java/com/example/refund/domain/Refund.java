@@ -1,6 +1,7 @@
 package com.example.refund.domain;
 
 import com.example.order.domain.OrderEntity;
+import com.example.refund.enums.RefundResolution;
 import com.example.refund.enums.RefundStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,6 +31,11 @@ public class Refund {
     @Column(nullable = false)
     private RefundStatus status = RefundStatus.REQUESTED;
 
+    // 환불 처리 방식
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RefundResolution resolution = RefundResolution.PENDING;
+
     // 고객이 입력한 환불 사유
     @Column(length = 500)
     private String reason;
@@ -42,12 +48,15 @@ public class Refund {
     // 실제 환불 완료 시간
     private LocalDateTime completedAt;
 
+
     public Refund() {
     }
+
 
     public Long getId() {
         return id;
     }
+
 
     public OrderEntity getOrder() {
         return order;
@@ -57,6 +66,7 @@ public class Refund {
         this.order = order;
     }
 
+
     public BigDecimal getAmount() {
         return amount;
     }
@@ -64,6 +74,7 @@ public class Refund {
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
+
 
     public RefundStatus getStatus() {
         return status;
@@ -73,6 +84,16 @@ public class Refund {
         this.status = status;
     }
 
+
+    public RefundResolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(RefundResolution resolution) {
+        this.resolution = resolution;
+    }
+
+
     public String getReason() {
         return reason;
     }
@@ -81,9 +102,11 @@ public class Refund {
         this.reason = reason;
     }
 
+
     public LocalDateTime getRequestedAt() {
         return requestedAt;
     }
+
 
     public LocalDateTime getCompletedAt() {
         return completedAt;

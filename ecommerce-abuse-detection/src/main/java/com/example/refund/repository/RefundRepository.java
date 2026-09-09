@@ -16,4 +16,7 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     long countByCustomerId(
             @Param("customerId") Long customerId
     );
+
+    boolean existsByOrderId(Long orderId);
+
 }
