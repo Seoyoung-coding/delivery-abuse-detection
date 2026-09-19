@@ -1,8 +1,13 @@
 package com.example.product.controller;
 
-import com.example.product.dto.ReturnlessDecisionResult;
-import com.example.product.service.ReturnlessDecisionService;
-import org.springframework.web.bind.annotation.*;
+import com.example.refund.enums.RefundResolution;
+import com.example.refund.service.ReturnlessDecisionService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/returnless")
@@ -17,30 +22,13 @@ public class ReturnlessController {
     }
 
     @GetMapping("/decision")
-    public ReturnlessDecisionResult getDecision(
-            @RequestParam double price,
-            @RequestParam double returnShippingCost,
-            @RequestParam double handlingCost,
-            @RequestParam double recoveryRate
+    public RefundResolution getDecision(
+            @RequestParam BigDecimal orderAmount,
+            @RequestParam double abuseScore
     ) {
-        return returnlessDecisionService.calculate(
-                price,
-                returnShippingCost,
-                handlingCost,
-                recoveryRate
-        );
-    }
-
-    @GetMapping("/threshold")
-    public double getThreshold(
-            @RequestParam double returnShippingCost,
-            @RequestParam double handlingCost,
-            @RequestParam double recoveryRate
-    ) {
-        return returnlessDecisionService.calculateThreshold(
-                returnShippingCost,
-                handlingCost,
-                recoveryRate
+        return returnlessDecisionService.decide(
+                orderAmount,
+                abuseScore
         );
     }
 }
