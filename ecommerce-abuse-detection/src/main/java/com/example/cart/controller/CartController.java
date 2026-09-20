@@ -41,4 +41,33 @@ public class CartController {
 
         return ResponseEntity.ok(cart);
     }
+
+    // 수량
+    @PatchMapping("/{cartItemId}/quantity")
+    public ResponseEntity<String> updateQuantity(
+            @PathVariable Long cartItemId,
+            @RequestParam Integer quantity
+    ) {
+
+        cartService.updateQuantity(
+                cartItemId,
+                quantity
+        );
+
+        return ResponseEntity.ok(
+                "Cart quantity updated"
+        );
+    }
+
+    @DeleteMapping("/{cartItemId}")
+    public ResponseEntity<String> deleteCartItem(
+            @PathVariable Long cartItemId
+    ) {
+
+        cartService.deleteCartItem(cartItemId);
+
+        return ResponseEntity.ok(
+                "Cart item deleted"
+        );
+    }
 }

@@ -103,4 +103,44 @@ public class CartService {
                 })
                 .toList();
     }
+
+    @Transactional
+    public void updateQuantity(
+            Long cartItemId,
+            Integer quantity
+    ) {
+
+        CartItem cartItem =
+                cartItemRepository.findById(cartItemId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Cart item not found"
+                                )
+                        );
+
+
+        if (quantity < 1) {
+            throw new RuntimeException(
+                    "Quantity must be at least 1"
+            );
+        }
+
+
+        cartItem.setQuantity(quantity);
+    }
+
+    @Transactional
+    public void deleteCartItem(Long cartItemId) {
+
+        CartItem cartItem =
+                cartItemRepository.findById(cartItemId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Cart item not found"
+                                )
+                        );
+
+        cartItemRepository.delete(cartItem);
+    }
+
 }
