@@ -1,5 +1,6 @@
 package com.example.customer.service;
 
+import com.example.abuse.repository.CustomerRiskProfileRepository;
 import com.example.customer.domain.Customer;
 import com.example.customer.dto.request.LoginRequest;
 import com.example.customer.dto.request.PasswordChangeRequest;
@@ -13,6 +14,8 @@ import com.example.global.exception.DuplicateEmailException;
 import com.example.global.exception.InvalidPasswordException;
 import com.example.global.exception.InvalidTokenException;
 import com.example.global.exception.LoginFailedException;
+import com.example.abuse.domain.CustomerRiskProfile;
+import com.example.abuse.repository.CustomerRiskProfileRepository;
 
 import com.example.global.jwt.JwtTokenProvider;
 
@@ -28,7 +31,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
+    private final CustomerRiskProfileRepository customerRiskProfileRepository;
 
     // =========================
     // 회원가입
@@ -43,6 +46,8 @@ public class CustomerService {
 
         String password =
                 request.getPassword();
+
+
 
 
         // =========================
@@ -116,9 +121,17 @@ public class CustomerService {
         // 6. DB 저장
         // =========================
 
-        customerRepository.save(
-                customer
-        );
+//        customerRepository.save(
+//                customer
+//        );
+
+        // 회원 가입을 하면 CustomerRiskProfile (0) 을 생성하도록 함 (위의 코드에서 교체)
+        Customer savedCustomer = customerRepository.save(customer);
+
+        CustomerRiskProfile profile = new CustomerRiskProfile();
+        profile.setCustomer(savedCustomer);
+
+        customerRiskProfileRepository.save(profile);
     }
 
 
