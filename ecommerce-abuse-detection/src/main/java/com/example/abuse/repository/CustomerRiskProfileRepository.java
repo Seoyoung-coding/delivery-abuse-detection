@@ -25,4 +25,17 @@ public interface CustomerRiskProfileRepository
             @Param("customerId") Long customerId,
             @Param("amount") BigDecimal amount
     );
+
+    @Modifying
+    @Query("""
+    UPDATE CustomerRiskProfile p
+    SET p.totalRefundCount = p.totalRefundCount + 1,
+        p.totalRefundAmount = p.totalRefundAmount + :amount,
+        p.updatedAt = CURRENT_TIMESTAMP
+    WHERE p.customerId = :customerId
+    """)
+    int incrementRefund(
+            @Param("customerId") Long customerId,
+            @Param("amount") BigDecimal amount
+    );
 }
