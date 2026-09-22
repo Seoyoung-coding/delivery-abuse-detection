@@ -1,6 +1,7 @@
 package com.example.refund.service;
 
 import com.example.abuse.dto.response.CustomerAbuseResponse;
+import com.example.abuse.repository.CustomerRiskProfileRepository;
 import com.example.abuse.service.AbuseCaseService;
 import com.example.abuse.service.CustomerAbuseService;
 import com.example.order.domain.OrderEntity;
@@ -31,6 +32,7 @@ public class RefundService {
     private final CustomerAbuseService customerAbuseService;
     private final AbuseCaseService abuseCaseService;
     private final ReturnlessDecisionService returnlessDecisionService;
+    private final CustomerRiskProfileRepository customerRiskProfileRepository;
 
     public RefundService(
             RefundRepository refundRepository,
@@ -38,7 +40,8 @@ public class RefundService {
             PaymentRepository paymentRepository,
             CustomerAbuseService customerAbuseService,
             AbuseCaseService abuseCaseService,
-            ReturnlessDecisionService returnlessDecisionService
+            ReturnlessDecisionService returnlessDecisionService,
+            CustomerRiskProfileRepository customerRiskProfileRepository
     ) {
         this.refundRepository = refundRepository;
         this.orderRepository = orderRepository;
@@ -46,6 +49,7 @@ public class RefundService {
         this.customerAbuseService = customerAbuseService;
         this.abuseCaseService = abuseCaseService;
         this.returnlessDecisionService = returnlessDecisionService;
+        this.customerRiskProfileRepository = customerRiskProfileRepository;
     }
 
     @Transactional
@@ -75,15 +79,13 @@ public class RefundService {
         refund.setReason(request.getReason());
         refund.setStatus(RefundStatus.REQUESTED);
 
-        Refund savedRefund =
-                refundRepository.save(refund);
+        Refund savedRefund = refundRepository.save(refund);
 
         // 4. 주문 상태 변경
         order.setStatus(OrderStatus.REFUND_REQUESTED);
 
         // 5. 고객 ID 조회
-        Long customerId =
-                order.getCustomer().getId();
+        Long customerId = order.getCustomer().getId();
 
         // 6. Abuse Score 계산
         CustomerAbuseResponse abuse =
@@ -105,7 +107,7 @@ public class RefundService {
                 abuse
         );
 
-        // 9. RETURNLESS이면 바로 환불 완료
+        // 9. RETURNLESS이면 즉시 환불 완료
         if (resolution == RefundResolution.RETURNLESS) {
 
             Payment payment =
@@ -123,17 +125,28 @@ public class RefundService {
             savedRefund.setStatus(RefundStatus.COMPLETED);
             savedRefund.setCompletedAt(LocalDateTime.now());
 
-            // 주문도 환불 완료
+            // 주문 상태 환불 완료
             order.setStatus(OrderStatus.REFUNDED);
+
+            // 고객 Risk Profile에 완료된 환불 누적
+            customerRiskProfileRepository.incrementRefund(
+                    customerId,
+                    savedRefund.getAmount()
+            );
         }
 
         /*
          * RETURN_REQUIRED이면
          * 지금은 REQUESTED 상태로 그대로 둔다.
          *
-         * 이후 반품 배송 로직을 연결해서
-         * 상품 회수가 완료되었을 때
-         * COMPLETED / REFUNDED 처리한다.
+         * 이후 반품 배송 로직에서 상품 회수가 완료되면:
+         *
+         * 1. RefundStatus.COMPLETED
+         * 2. PaymentStatus.REFUNDED
+         * 3. OrderStatus.REFUNDED
+         * 4. incrementRefund(...)
+         *
+         * 를 실행하면 된다.
          */
 
         // 10. 결과 반환
